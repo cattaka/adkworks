@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+	<TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+	    >
+	    <TableRow android:layout_width="fill_parent" android:layout_height="wrap_content" android:padding="5dip">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Axis 1" />
+	        <SeekBar android:id="@+id/valueBar1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" />
+            <TextView android:id="@+id/valueText1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="    " />
+	    </TableRow>
+        <TableRow android:layout_width="fill_parent" android:layout_height="wrap_content" android:padding="5dip">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Axis 2" />
+            <SeekBar android:id="@+id/valueBar2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" />
+            <TextView android:id="@+id/valueText2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="    " />
+        </TableRow>
+        <TableRow android:layout_width="fill_parent" android:layout_height="wrap_content" android:padding="5dip">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Axis 3" />
+            <SeekBar android:id="@+id/valueBar3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" />
+            <TextView android:id="@+id/valueText3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="    " />
+        </TableRow>
+        <TableRow android:layout_width="fill_parent" android:layout_height="wrap_content" android:padding="5dip">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Axis 4" />
+            <SeekBar android:id="@+id/valueBar4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" />
+            <TextView android:id="@+id/valueText4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="    " />
+        </TableRow>
+        <TableRow android:layout_width="fill_parent" android:layout_height="wrap_content" android:padding="5dip">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Axis 5" />
+            <SeekBar android:id="@+id/valueBar5" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" />
+            <TextView android:id="@+id/valueText5" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="    " />
+        </TableRow>
+        <TableRow android:layout_width="fill_parent" android:layout_height="wrap_content" android:padding="5dip">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Axis 6" />
+            <SeekBar android:id="@+id/valueBar6" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" />
+            <TextView android:id="@+id/valueText6" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="    " />
+        </TableRow>
+   	</TableLayout>
+</FrameLayout>

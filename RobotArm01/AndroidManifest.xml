@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="net.cattaka.robotarm01"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="10" />
+    <uses-feature android:glEsVersion="0x00020000" />
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <application
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name" android:name="Robotarm01Application">
+        <uses-library android:name="com.android.future.usb.accessory" />
+        <activity
+            android:name="net.cattaka.robotarm01.MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
+            </intent-filter>
+            <meta-data android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED"
+                android:resource="@xml/accessory_filter" />
+        </activity>
+        <activity android:name="net.cattaka.robotarm01.ControllerActivity"></activity>
+        <activity android:name="net.cattaka.robotarm01.AutoDetectionModeActivity"
+            android:screenOrientation="landscape"
+            >
+        </activity>
+        <activity android:name=".AdjustmentActivity"></activity>
+        <service android:name=".service.AdkService"></service>
+        </application>
+
+</manifest>

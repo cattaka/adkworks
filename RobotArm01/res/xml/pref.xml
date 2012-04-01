@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="Servo1">
+        <EditTextPreference android:title="min(deg)" android:key="servo1_min" android:defaultValue="-75"/>
+        <EditTextPreference android:title="max(deg)" android:key="servo1_max" android:defaultValue="75"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Servo2">
+        <EditTextPreference android:title="min(deg)" android:key="servo2_min" android:defaultValue="-80"/>
+        <EditTextPreference android:title="max(deg)" android:key="servo2_max" android:defaultValue="75"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Servo3">
+        <EditTextPreference android:title="min(deg)" android:key="servo3_min" android:defaultValue="-100"/>
+        <EditTextPreference android:title="max(deg)" android:key="servo3_max" android:defaultValue="110"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Servo4">
+        <EditTextPreference android:title="min(deg)" android:key="servo4_min" android:defaultValue="-90"/>
+        <EditTextPreference android:title="max(deg)" android:key="servo4_max" android:defaultValue="95"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Servo5">
+        <EditTextPreference android:title="min(deg)" android:key="servo5_min" android:defaultValue="-90"/>
+        <EditTextPreference android:title="max(deg)" android:key="servo5_max" android:defaultValue="90"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Servo6">
+        <EditTextPreference android:title="min(deg)" android:key="servo6_min" android:defaultValue="-90"/>
+        <EditTextPreference android:title="max(deg)" android:key="servo6_max" android:defaultValue="90"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Arm offset(mm)">
+        <EditTextPreference android:title="Angle Offset 1" android:key="angle_offset_1" android:defaultValue="4"/>
+        <EditTextPreference android:title="Angle Offset 2" android:key="angle_offset_2" android:defaultValue="0"/>
+        <EditTextPreference android:title="Angle Offset 3" android:key="angle_offset_3" android:defaultValue="0"/>
+        <EditTextPreference android:title="Angle Offset 4" android:key="angle_offset_4" android:defaultValue="0"/>
+        <EditTextPreference android:title="Angle Offset 5" android:key="angle_offset_5" android:defaultValue="0"/>
+        <EditTextPreference android:title="Angle Offset 6" android:key="angle_offset_6" android:defaultValue="0"/>
+        </PreferenceCategory>
+    <PreferenceCategory android:title="Arm length(mm)">
+        <EditTextPreference android:title="Length 1" android:key="arm_length_1" android:defaultValue="132"/>
+        <EditTextPreference android:title="Length 2" android:key="arm_length_2" android:defaultValue="114"/>
+        <EditTextPreference android:title="Length 3" android:key="arm_length_3" android:defaultValue="113"/>
+        <EditTextPreference android:title="Length 4" android:key="arm_length_4" android:defaultValue="160"/>
+    </PreferenceCategory>
+</PreferenceScreen>
