@@ -1,0 +1,10 @@
+PositionDetector
+ QCARを使用した座標認識用のフラグメントなどがあります。
+ 別途QCARライブラリが必要で、ビルドパスを通す必要があります。
+
+RobotArm01
+ http://www.youtube.com/watch?v=WWRsUM4U5cc
+ のロボットアームのソースコードです。
+ arduino側のコードは/misc以下にあります。
+ 別途QCARライブラリが必要で、ビルドパスを通す必要があります。
+
