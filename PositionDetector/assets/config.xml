@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QCARConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="qcar_config.xsd">
+  <Tracking>
+    <Marker type="id-frame" id="0" size="21 21" name="mymarker1" /> 
+    <Marker type="id-frame" id="1" size="21 21" name="mymarker2" />
+    <Marker type="id-frame" id="2" size="21 21" name="mymarker3" />
+    <Marker type="id-frame" id="3" size="21 21" name="mymarker4" /> 
+    <Marker type="id-frame" id="4" size="21 21" name="mymarker5" /> 
+    <Marker type="id-frame" id="5" size="21 21" name="mymarker6" /> 
+    <Marker type="id-frame" id="6" size="21 21" name="mymarker7" /> 
+    <Marker type="id-frame" id="7" size="21 21" name="mymarker8" /> 
+    <Marker type="id-frame" id="8" size="21 21" name="mymarker9" /> 
+    <Marker type="id-frame" id="9" size="21 21" name="mymarker10" /> 
+  </Tracking>
+</QCARConfig>
