@@ -5,6 +5,8 @@
 #include <MemoryMapLib.h>
 #include <Servo.h>
 
+#define LED_PIN 0
+
 #define TARGET_PIN   2
 #define SERVO_NUM    6
 #define POWER_DELAY 10
@@ -47,25 +49,25 @@ void setup() {
   initMyServo(4, 750, 2250, 0x7FFF, 0xfff);  // ZS
   initMyServo(5, 500, 1700, 0x7FFF, 0xfff);  // emax(limited of max 2000)
 
-  analogWrite(12, 127);
+  analogWrite(LED_PIN, 127);
   mMemoryMap.setStreamInterface(&mAndroidAccessoryStream);
-  analogWrite(12, 0);
+  analogWrite(LED_PIN, 0);
 
   // register LED Command to Address 0x1b
   for (int i=0;i<SERVO_NUM;i++) {
     mMemoryMap.registerMapAddressJob(0x01+i*2,OPERATION_WRITE,&jobReceive);
     mMemoryMap.registerMapAddressJob(0x01+i*2+1,OPERATION_WRITE,&jobReceive);
   }
-  analogWrite(12,255);
+  analogWrite(LED_PIN,255);
   delay(1000);
 }
 
 void loop() {
   if (mAndroidAccessory.isConnected()) {
-    analogWrite(12,255);
+    analogWrite(LED_PIN,255);
     mMemoryMap.poll();
   } else {
-    analogWrite(12,0);
+    analogWrite(LED_PIN,0);
     mAndroidAccessoryStream.setInterface(&mAndroidAccessory);
   }
 
