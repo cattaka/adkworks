@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="Servo1">
+        <EditTextPreference android:title="min(deg)" android:key="servo1_min" android:defaultValue="-75"/>
+        <EditTextPreference android:title="max(deg)" android:key="servo1_max" android:defaultValue="75"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Servo2">
+        <EditTextPreference android:title="min(deg)" android:key="servo2_min" android:defaultValue="-80"/>
+        <EditTextPreference android:title="max(deg)" android:key="servo2_max" android:defaultValue="75"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Twitter">
+        <EditTextPreference android:title="token" android:key="accessToken" android:defaultValue=""/>
+        <EditTextPreference android:title="tokenSecret" android:key="accessTokenSecret" android:defaultValue=""/>
+    </PreferenceCategory>
+</PreferenceScreen>

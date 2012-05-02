@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QCARConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="qcar_config.xsd">
+  <Tracking>
+    <Marker type="id-frame" id="0" size="19 19" name="mymarker1" /> 
+    <Marker type="id-frame" id="1" size="19 19" name="mymarker2" />
+    <Marker type="id-frame" id="2" size="19 19" name="mymarker3" />
+    <Marker type="id-frame" id="3" size="19 19" name="mymarker4" /> 
+    <Marker type="id-frame" id="4" size="19 19" name="mymarker5" /> 
+    <Marker type="id-frame" id="5" size="19 19" name="mymarker6" /> 
+    <Marker type="id-frame" id="6" size="19 19" name="mymarker7" /> 
+    <Marker type="id-frame" id="7" size="19 19" name="mymarker8" /> 
+    <Marker type="id-frame" id="8" size="19 19" name="mymarker9" /> 
+    <Marker type="id-frame" id="9" size="19 19" name="mymarker10" /> 
+    <Marker type="id-frame" id="10" size="19 19" name="mymarker11" /> 
+    <Marker type="id-frame" id="11" size="19 19" name="mymarker12" /> 
+    <Marker type="id-frame" id="12" size="19 19" name="mymarker13" /> 
+    <Marker type="id-frame" id="13" size="19 19" name="mymarker14" /> 
+    <Marker type="id-frame" id="14" size="19 19" name="mymarker15" /> 
+    <Marker type="id-frame" id="15" size="19 19" name="mymarker16" /> 
+    <Marker type="id-frame" id="16" size="19 19" name="mymarker17" /> 
+    <Marker type="id-frame" id="17" size="19 19" name="mymarker18" /> 
+    <Marker type="id-frame" id="18" size="19 19" name="mymarker19" /> 
+    <Marker type="id-frame" id="19" size="19 19" name="mymarker20" /> 
+    <Marker type="id-frame" id="20" size="19 19" name="mymarker21" /> 
+  </Tracking>
+</QCARConfig>
