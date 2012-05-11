@@ -159,7 +159,16 @@ public class MonitorTwitterActivity extends Activity {
         
         List<Long> follow = new ArrayList<Long>();
         List<String> track = new ArrayList<String>();
-        track.add("nyaruko");
+        {
+            String trackWords = mSetting.getTrackWords();
+            if (trackWords == null || trackWords.length() == 0) {
+                trackWords = "droidrobo";
+            }
+            String[] tracks = trackWords.split("\\s+");
+            for (String str : tracks) {
+                track.add(str);
+            }
+        }
         
         long[] followArray = new long[follow.size()];
         for (int i = 0; i < follow.size(); i++) {

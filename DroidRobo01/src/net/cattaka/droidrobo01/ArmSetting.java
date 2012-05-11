@@ -21,6 +21,8 @@ public class ArmSetting {
     private String accessToken;
     
     private String accessTokenSecret;
+    
+    private String trackWords;
 
     public void loadPreference(SharedPreferences pref) {
         servo1Min = loadInt(pref, "servo1_min", -80);
@@ -29,6 +31,7 @@ public class ArmSetting {
         servo2Max = loadInt(pref, "servo2_max", 80);
         accessToken = pref.getString("accessToken", "");
         accessTokenSecret = pref.getString("accessTokenSecret", "");
+        trackWords = pref.getString("trackWords", "droidrobo");
     }
     
     public void savePreference(SharedPreferences pref) {
@@ -39,6 +42,8 @@ public class ArmSetting {
         editor.putString("servo2_max", ""+servo2Max);
         editor.putString("accessToken", accessToken);
         editor.putString("accessTokenSecret", accessTokenSecret);
+        editor.putString("trackWords", trackWords);
+
         editor.commit();
     }
 
@@ -134,6 +139,14 @@ public class ArmSetting {
 
     public void setAccessTokenSecret(String accessTokenSecret) {
         this.accessTokenSecret = accessTokenSecret;
+    }
+
+    public String getTrackWords() {
+        return trackWords;
+    }
+
+    public void setTrackWords(String trackWords) {
+        this.trackWords = trackWords;
     }
     
     

@@ -9,6 +9,7 @@
         <EditTextPreference android:title="max(deg)" android:key="servo2_max" android:defaultValue="75"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="Twitter">
+        <EditTextPreference android:title="Track Words" android:key="trackWords" android:defaultValue="droidrobo"/>
         <EditTextPreference android:title="token" android:key="accessToken" android:defaultValue=""/>
         <EditTextPreference android:title="tokenSecret" android:key="accessTokenSecret" android:defaultValue=""/>
     </PreferenceCategory>
