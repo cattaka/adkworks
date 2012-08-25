@@ -43,8 +43,8 @@ void initMyServo(int idx, int pulseMin, int pulseMax, long initValue, long stepW
 
 void setup() {
   initMyServo(0, 750, 2250, 0x7FFF, 0xff);  // ZS
-  initMyServo(1, 700, 2300, 0x7FFF, 0xff);  // XQ
-  initMyServo(2, 853, 2187, 0x7FFF, 0xfff);  // FUTABA
+  initMyServo(1, 700, 2300, 0x7FFF, 0xaf);  // XQ
+  initMyServo(2, 853, 2187, 0x7FFF, 0xcf);  // FUTABA
   initMyServo(3, 853, 2187, 0x7FFF, 0xff);  // FUTABA
   initMyServo(4, 750, 2250, 0x7FFF, 0xfff);  // ZS
   initMyServo(5, 500, 1700, 0x7FFF, 0xfff);  // emax(limited of max 2000)
