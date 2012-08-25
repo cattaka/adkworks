@@ -55,9 +55,7 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
 
     private enum ErrorType {
         NO_ERROR, //
-        OBJECT_NOT_DETECTED,
-        TARGET_NOT_DETECTED,
-        BAD_OBJECT_POSITION, //
+        OBJECT_NOT_DETECTED, TARGET_NOT_DETECTED, BAD_OBJECT_POSITION, //
         BAD_TARGET_POSITION, //
     };
 
@@ -89,6 +87,7 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
 
     private static class PositionBundle {
         boolean detected;
+
         float[] position = CtkMath.createVector3f();
 
         float[] xVec = CtkMath.createVector3f();
@@ -96,13 +95,13 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
         float[] yVec = CtkMath.createVector3f();
 
         float[] zVec = CtkMath.createVector3f();
-        
+
         public void reset() {
             detected = false;
-            CtkMath.set(position, 0,0,0);
-            CtkMath.set(xVec, 1,0,0);
-            CtkMath.set(yVec, 0,1,0);
-            CtkMath.set(zVec, 0,0,1);
+            CtkMath.set(position, 0, 0, 0);
+            CtkMath.set(xVec, 1, 0, 0);
+            CtkMath.set(yVec, 0, 1, 0);
+            CtkMath.set(zVec, 0, 0, 1);
         }
     }
 
@@ -113,6 +112,8 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
      * オブジェクト上のマージン30mm
      */
     private static final float UPPER_MARGIN = 30;
+
+    private static final float EXTRA_MARGIN_RELEASE = 5;
 
     /** 自動動作モード時の動作対象とするターゲットとの距離 */
     private static final float AUTO_MODE_DISTANCE = 40;
@@ -125,7 +126,7 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
     private static final long DELAY_MOVE = 3000;
 
     private static final long DELAY_READY_TO_AUTO_MODE = 3000;
-    
+
     private static final float[][] ANCHOR_POS_OFFSET = new float[][] {
             CtkMath.createVector3f(0, -75, 0), //
             CtkMath.createVector3f(55f, -75, 0), //
@@ -197,10 +198,7 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
     private PositionBundle mObjectBundle = new PositionBundle();
 
     private PositionBundle[] mTargetBundles = new PositionBundle[] {
-            new PositionBundle(),
-            new PositionBundle(),
-            new PositionBundle(),
-            new PositionBundle(),
+            new PositionBundle(), new PositionBundle(), new PositionBundle(), new PositionBundle(),
     };
 
     private float[] tAnchorMat = CtkMath.createMatrix4f();
@@ -233,7 +231,7 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
                 if (mArmStateQueue.size() > 0) {
                     mCurrentArmState = mArmStateQueue.remove();
                 } else {
-                    ToggleButton autoModeToggle = (ToggleButton) findViewById(R.id.autoModeToggle);
+                    ToggleButton autoModeToggle = (ToggleButton)findViewById(R.id.autoModeToggle);
                     // 自動モードならサーチを試みる
                     if (autoModeToggle.isChecked() && startAutoGrabAction()) {
                         // OK
@@ -245,14 +243,15 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
                 }
                 if (mCurrentArmState.armStateType == ArmStateType.READY_TO_AUTO_MODE) {
                     if (mObjectBundle.detected) {
-                        float distance = CtkMath.distance(mCurrentArmState.exPosition, mObjectBundle.position);
+                        float distance = CtkMath.distance(mCurrentArmState.exPosition,
+                                mObjectBundle.position);
                         // オブジェクトが動いてないなら掴みにかかる
                         if (distance <= AUTO_MODE_DIFF) {
                             startGrabAction(false);
                         }
                     }
                 }
-                
+
                 TextView armStateText = (TextView)findViewById(R.id.armStateText);
                 armStateText.setText(mCurrentArmState.armStateType.name());
                 this.sendEmptyMessageDelayed(EVENT_UPDATE_ARM_STATE, mCurrentArmState.time);
@@ -337,12 +336,19 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
             TextView textView = (TextView)findViewById(R.id.positionOutText);
             String str = String
                     .format("Pos=(%.3f,%.3f,%.3f)\nLeft=(%.3f,%.3f,%.3f)\nUp=(%.3f,%.3f,%.3f)\nFront=(%.3f,%.3f,%.3f)\nGoodFront=(%.3f,%.3f,%.3f)\nTargetPos=(%.3f,%.3f,%.3f)", //
-                            mObjectBundle.position[0], mObjectBundle.position[1], mObjectBundle.position[2], //
-                            mObjectBundle.xVec[0], mObjectBundle.xVec[1], mObjectBundle.xVec[2], //
-                            mObjectBundle.yVec[0], mObjectBundle.yVec[1], mObjectBundle.yVec[2], //
-                            mObjectBundle.zVec[0], mObjectBundle.zVec[1], mObjectBundle.zVec[2], //
-                            goodFrontVec[0], goodFrontVec[1], goodFrontVec[2],  //
-                            mTargetBundles[0].position[0], mTargetBundles[0].position[1], mTargetBundles[0].position[2] //
+                            mObjectBundle.position[0],
+                            mObjectBundle.position[1],
+                            mObjectBundle.position[2], //
+                            mObjectBundle.xVec[0], mObjectBundle.xVec[1],
+                            mObjectBundle.xVec[2], //
+                            mObjectBundle.yVec[0], mObjectBundle.yVec[1],
+                            mObjectBundle.yVec[2], //
+                            mObjectBundle.zVec[0], mObjectBundle.zVec[1],
+                            mObjectBundle.zVec[2], //
+                            goodFrontVec[0], goodFrontVec[1],
+                            goodFrontVec[2], //
+                            mTargetBundles[0].position[0], mTargetBundles[0].position[1],
+                            mTargetBundles[0].position[2] //
                     );
             textView.setText(str);
         }
@@ -370,16 +376,19 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
                 }
             }
             { // アンカーの行列を使ってブロックの座標を割り出す
-                for (int i = OBJECT_IDX_OFFSET; i < OBJECT_IDX_OFFSET+OBJECT_POS_OFFSET.length; i++) {
+                for (int i = OBJECT_IDX_OFFSET; i < OBJECT_IDX_OFFSET + OBJECT_POS_OFFSET.length; i++) {
                     TagState tagState = mTagStateMap.get(i);
                     if (tagState != null && tagState.getTagEvent() != TagEvent.DISAPPEAR) {
                         Matrix.multiplyMM(tTmpMat, 0, tInvAnchorMat, 0, tagState.getPoseMats(), 0);
                         { // 座標の算出
-                            mObjectBundle.position[0] += tTmpMat[12] + OBJECT_POS_OFFSET[i - OBJECT_IDX_OFFSET][0]
+                            mObjectBundle.position[0] += tTmpMat[12]
+                                    + OBJECT_POS_OFFSET[i - OBJECT_IDX_OFFSET][0]
                                     + ANCHOR_POS_OFFSET[j][0];
-                            mObjectBundle.position[1] += tTmpMat[13] + OBJECT_POS_OFFSET[i - OBJECT_IDX_OFFSET][1]
+                            mObjectBundle.position[1] += tTmpMat[13]
+                                    + OBJECT_POS_OFFSET[i - OBJECT_IDX_OFFSET][1]
                                     + ANCHOR_POS_OFFSET[j][1];
-                            mObjectBundle.position[2] += tTmpMat[14] + OBJECT_POS_OFFSET[i - OBJECT_IDX_OFFSET][2]
+                            mObjectBundle.position[2] += tTmpMat[14]
+                                    + OBJECT_POS_OFFSET[i - OBJECT_IDX_OFFSET][2]
                                     + ANCHOR_POS_OFFSET[j][2];
                             count++;
                         }
@@ -388,11 +397,14 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
                             tTmpMat[13] = 0;
                             tTmpMat[14] = 0;
                             CtkMath.inverseMatrix4f(tTmpMat2, tTmpMat);
-                            CtkMath.transpose3F(tTmpVec, OBJECT_X_VEC[i - OBJECT_IDX_OFFSET], tTmpMat2);
+                            CtkMath.transpose3F(tTmpVec, OBJECT_X_VEC[i - OBJECT_IDX_OFFSET],
+                                    tTmpMat2);
                             CtkMath.addEq3F(mObjectBundle.xVec, tTmpVec);
-                            CtkMath.transpose3F(tTmpVec, OBJECT_Y_VEC[i - OBJECT_IDX_OFFSET], tTmpMat2);
+                            CtkMath.transpose3F(tTmpVec, OBJECT_Y_VEC[i - OBJECT_IDX_OFFSET],
+                                    tTmpMat2);
                             CtkMath.addEq3F(mObjectBundle.yVec, tTmpVec);
-                            CtkMath.transpose3F(tTmpVec, OBJECT_Z_VEC[i - OBJECT_IDX_OFFSET], tTmpMat2);
+                            CtkMath.transpose3F(tTmpVec, OBJECT_Z_VEC[i - OBJECT_IDX_OFFSET],
+                                    tTmpMat2);
                             CtkMath.addEq3F(mObjectBundle.zVec, tTmpVec);
                         }
                     }
@@ -432,12 +444,9 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
                         mTargetBundles[i].detected = true;
                         Matrix.multiplyMM(tTmpMat, 0, tInvAnchorMat, 0, tagState.getPoseMats(), 0);
                         { // 座標の算出
-                            mTargetBundles[i].position[0] = tTmpMat[12]
-                                    + ANCHOR_POS_OFFSET[j][0];
-                            mTargetBundles[i].position[1] = tTmpMat[13]
-                                    + ANCHOR_POS_OFFSET[j][1];
-                            mTargetBundles[i].position[2] = tTmpMat[14]
-                                    + ANCHOR_POS_OFFSET[j][2];
+                            mTargetBundles[i].position[0] = tTmpMat[12] + ANCHOR_POS_OFFSET[j][0];
+                            mTargetBundles[i].position[1] = tTmpMat[13] + ANCHOR_POS_OFFSET[j][1];
+                            mTargetBundles[i].position[2] = tTmpMat[14] + ANCHOR_POS_OFFSET[j][2];
                             count++;
                         }
                         { // X方向、Y方向、Z方向の算出
@@ -466,8 +475,9 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
             mPositionDetectorFragment.startAutoFocus();
         }
     }
+
     private void startGrabAction(boolean sendEvent) {
-        TextView messageText = (TextView) findViewById(R.id.messageText);
+        TextView messageText = (TextView)findViewById(R.id.messageText);
         List<ArmState> armStates = new ArrayList<AutoDetectionModeActivity.ArmState>();
         ErrorType errorType = createArmState(armStates);
         if (errorType == ErrorType.NO_ERROR) {
@@ -482,6 +492,7 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
             messageText.setText("Starting grab action failed:" + errorType);
         }
     }
+
     private boolean startAutoGrabAction() {
         PositionBundle targetBundle = mTargetBundles[0];
         if (mObjectBundle.detected && targetBundle.detected) {
@@ -527,8 +538,8 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
         ArmState moveToTargetState;
         int index;
         { // MOVE_ABOVE_OBJECT
-            float[] position = CtkMath.createVector3f(-mObjectBundle.position[1], mObjectBundle.position[0],
-                    mObjectBundle.position[2] + UPPER_MARGIN);
+            float[] position = CtkMath.createVector3f(-mObjectBundle.position[1],
+                    mObjectBundle.position[0], mObjectBundle.position[2] + UPPER_MARGIN);
             float[] frontVec = CtkMath.createVector3f(0, 0, -1);
             float[] upVec = CtkMath.createVector3f(goodFrontVec[1], -goodFrontVec[0],
                     goodFrontVec[2]);
@@ -543,8 +554,8 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
             armStates.add(new ArmState(ArmStateType.MOVE_ABOVE_OBJECT, armAngles, DELAY_MOVE));
         }
         { // MOVE_TO_OBJECT
-            float[] position = CtkMath.createVector3f(-mObjectBundle.position[1], mObjectBundle.position[0],
-                    mObjectBundle.position[2]);
+            float[] position = CtkMath.createVector3f(-mObjectBundle.position[1],
+                    mObjectBundle.position[0], mObjectBundle.position[2]);
             float[] frontVec = CtkMath.createVector3f(0, 0, -1);
             float[] upVec = CtkMath.createVector3f(goodFrontVec[1], -goodFrontVec[0],
                     goodFrontVec[2]);
@@ -568,8 +579,9 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
         }
         int tIndex = -1;
         { // MOVE_ABOVE_TARGET
-            float[] position = CtkMath.createVector3f(-targetBundle.position[1], targetBundle.position[0],
-                    targetBundle.position[2] + UPPER_MARGIN + OBJECT_SIZE/2);
+            float[] position = CtkMath.createVector3f(-targetBundle.position[1],
+                    targetBundle.position[0], targetBundle.position[2] + UPPER_MARGIN + OBJECT_SIZE
+                            / 2);
             float[] frontVec = CtkMath.createVector3f(0, 0, -1);
             float[] upVec = CtkMath.createVector3f(1, 0, 0);
             AngleBundle[] angleBundles = ArmAngleUtil
@@ -585,8 +597,9 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
             armStates.add(moveToTargetState);
         }
         { // MOVE_TO_TARGET
-            float[] position = CtkMath.createVector3f(-targetBundle.position[1], targetBundle.position[0],
-                    targetBundle.position[2] + OBJECT_SIZE/2);
+            float[] position = CtkMath.createVector3f(-targetBundle.position[1],
+                    targetBundle.position[0], targetBundle.position[2] + OBJECT_SIZE / 2
+                            + EXTRA_MARGIN_RELEASE);
             float[] frontVec = CtkMath.createVector3f(0, 0, -1);
             float[] upVec = CtkMath.createVector3f(1, 0, 0);
             AngleBundle[] angleBundles = ArmAngleUtil
@@ -609,8 +622,9 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
             armStates.add(armState);
         }
         { // MOVE_TO_RELEASED_OBJECT
-            float[] position = CtkMath.createVector3f(-targetBundle.position[1], targetBundle.position[0],
-                    targetBundle.position[2] + UPPER_MARGIN + OBJECT_SIZE/2);
+            float[] position = CtkMath.createVector3f(-targetBundle.position[1],
+                    targetBundle.position[0], targetBundle.position[2] + UPPER_MARGIN + OBJECT_SIZE
+                            / 2);
             float[] frontVec = CtkMath.createVector3f(0, 0, -1);
             float[] upVec = CtkMath.createVector3f(1, 0, 0);
             AngleBundle[] angleBundles = ArmAngleUtil
@@ -621,7 +635,8 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
             }
             float[] armAngles = angleBundles[tIndex].toAnglesFloatArray();
             armAngles[5] = (float)ArmAngleUtil.digToRad(mArmSetting.getServo6Min());
-            armStates.add(new ArmState(ArmStateType.MOVE_ABOVE_RELEASED_OBJECT, armAngles, DELAY_WAIT));
+            armStates.add(new ArmState(ArmStateType.MOVE_ABOVE_RELEASED_OBJECT, armAngles,
+                    DELAY_WAIT));
         }
         return ErrorType.NO_ERROR;
     }
@@ -669,9 +684,12 @@ public class AutoDetectionModeActivity extends FragmentActivity implements
             float[][] vecs;
             {
                 vecs = new float[][] {
-                        CtkMath.createVector3f(mObjectBundle.xVec), CtkMath.createVector3f(mObjectBundle.yVec),
-                        CtkMath.createVector3f(mObjectBundle.zVec), CtkMath.createVector3f(mObjectBundle.xVec),
-                        CtkMath.createVector3f(mObjectBundle.yVec), CtkMath.createVector3f(mObjectBundle.zVec)
+                        CtkMath.createVector3f(mObjectBundle.xVec),
+                        CtkMath.createVector3f(mObjectBundle.yVec),
+                        CtkMath.createVector3f(mObjectBundle.zVec),
+                        CtkMath.createVector3f(mObjectBundle.xVec),
+                        CtkMath.createVector3f(mObjectBundle.yVec),
+                        CtkMath.createVector3f(mObjectBundle.zVec)
                 };
                 CtkMath.scaleEq3F(vecs[3], -1);
                 CtkMath.scaleEq3F(vecs[4], -1);
