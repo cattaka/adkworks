@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/GridLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:columnCount="5" >
+
+    <!-- LED -->
+    <TextView
+        android:layout_gravity="left"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dip"
+        android:text="RED" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_columnSpan="2"
+        android:layout_gravity="left"
+        android:text="true" />
+	<Space android:layout_columnSpan="2" />
+    <!-- Arm -->
+    <TextView
+        android:layout_gravity="left"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dip"
+        android:text="Left Arm Power" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_columnSpan="2"
+        android:layout_gravity="fill_horizontal"
+        android:text="1" />
+
+    <TextView
+        android:layout_gravity="left"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dip"
+        android:text="Right Arm Power" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_gravity="left"
+        android:text="2" />
+
+    <!-- Rotate -->
+    <TextView
+        android:layout_gravity="left"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dip"
+        android:text="Left Mortor Power" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_gravity="left"
+        android:layout_columnSpan="2"
+        android:text="3" />
+
+    <TextView
+        android:layout_gravity="right"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dip"
+        android:text="Right Mortor Power" />
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_gravity="left"
+        android:text="4" />
+
+    <!-- Time -->
+    <TextView
+        android:layout_gravity="left"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dip"
+        android:text="Time" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_gravity="left"
+        android:layout_columnSpan="2"
+        android:text="5" />
+	<Space android:layout_columnSpan="2" />
+    
+</GridLayout>
