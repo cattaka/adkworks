@@ -3,12 +3,16 @@ package jp.co.kayo.android.droiddancermotionwriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import jp.co.kayo.android.droiddancermotionwriter.MotionItem.MotorDir;
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -17,13 +21,8 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.Bundle;
-import android.app.Activity;
-import android.app.PendingIntent;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -31,29 +30,36 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SeekBar;
-import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
-import android.support.v4.app.NavUtils;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
     private static final String TAG = "DroidDancerMotionWriter";
+
     private TextView textView1;
+
     private SeekBar seekBar1;
+
     private ListView listView1;
+
     private MotionListAdapter adapter;
+
     private Button button1;
+
     private List<MotionItem> items = new ArrayList<MotionItem>();
+
     private NfcAdapter nfcadapter;
+
     private IntentFilter[] nfcfilters = new IntentFilter[] {
-            new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED)
+        new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED)
     };
+
     private String[][] nfctechLists = new String[][] {
             new String[] {
-                    Ndef.class.getName()
-            },
-            new String[] {
-                    NdefFormatable.class.getName()
+                Ndef.class.getName()
+            }, new String[] {
+                NdefFormatable.class.getName()
             }
     };
 
@@ -63,10 +69,10 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         nfcadapter = NfcAdapter.getDefaultAdapter(this);
-        
-        listView1 = (ListView) findViewById(R.id.listView1);
-        textView1 = (TextView) findViewById(R.id.textView1);
-        seekBar1 = (SeekBar) findViewById(R.id.seekBar1);
+
+        listView1 = (ListView)findViewById(R.id.listView1);
+        textView1 = (TextView)findViewById(R.id.textView1);
+        seekBar1 = (SeekBar)findViewById(R.id.seekBar1);
         seekBar1.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
             @Override
@@ -83,18 +89,18 @@ public class MainActivity extends Activity {
 
             }
         });
-        button1 = (Button) findViewById(R.id.button1);
+        button1 = (Button)findViewById(R.id.button1);
         button1.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 MotionItem item = new MotionItem();
                 item.setLed(false);
-                item.setArmleft((byte) 0);
-                item.setArmright((byte) 0);
-                item.setRotleft((byte) 0);
-                item.setRotright((byte) 0);
-                item.setTime((byte) 1);
+                item.setArmleft((byte)0);
+                item.setArmright((byte)0);
+                item.setRotleft(MotorDir.STOP);
+                item.setRotright(MotorDir.STOP);
+                item.setTime((byte)1);
                 items.add(item);
                 adapter.setData(items);
                 adapter.notifyDataSetChanged();
@@ -137,11 +143,11 @@ public class MainActivity extends Activity {
                 for (MotionItem item : items) {
                     if (item.getUid() == uid) {
                         item.setLed(data.getBooleanExtra("led", false));
-                        item.setArmleft(data.getByteExtra("armleft", (byte) 0));
-                        item.setArmright(data.getByteExtra("armright", (byte) 0));
-                        item.setRotleft(data.getByteExtra("rotleft", (byte) 0));
-                        item.setRotright(data.getByteExtra("rotright", (byte) 0));
-                        item.setTime(data.getByteExtra("time", (byte) 0));
+                        item.setArmleft(data.getIntExtra("armleft", 0));
+                        item.setArmright(data.getIntExtra("armright", 0));
+                        item.setRotleft(MotorDir.parse(data.getIntExtra("rotleft", 0)));
+                        item.setRotright(MotorDir.parse(data.getIntExtra("rotright", 0)));
+                        item.setTime(data.getIntExtra("time", 0));
                         adapter.notifyDataSetChanged();
                         break;
                     }
@@ -188,18 +194,16 @@ public class MainActivity extends Activity {
                 } finally {
                     ndef.close();
                 }
-            }
-            else if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
+            } else if (Arrays.asList(tag.getTechList()).contains(Ndef.class.getName())) {
                 Ndef ndef = Ndef.get(tag);
                 try {
                     if (!ndef.isConnected()) {
                         ndef.connect();
                     }
-                    if(ndef.isWritable()){
+                    if (ndef.isWritable()) {
                         ndef.writeNdefMessage(createNdefMessage());
                         Toast.makeText(this, "Write Success.", Toast.LENGTH_SHORT).show();
-                    }
-                    else{
+                    } else {
                         Toast.makeText(this, "Writing is not supported", Toast.LENGTH_SHORT).show();
                     }
                 } finally {
@@ -218,26 +222,30 @@ public class MainActivity extends Activity {
     }
 
     private NdefMessage createNdefMessage() throws IOException {
-        byte[] mimeBytes = "application/jp.co.kayo.android.droiddancermotionwriter".getBytes(Charset.forName("US-ASCII"));
+        byte[] mimeBytes = "application/jp.co.kayo.android.droiddancermotionwriter"
+                .getBytes(Charset.forName("US-ASCII"));
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         byte[] header = new byte[2];
-        header[0] = new Integer(seekBar1.getProgress()).byteValue();
-        header[1] = new Integer(items.size()).byteValue();
+        header[0] = (byte)(seekBar1.getProgress());
+        header[1] = (byte)(items.size());
         bytes.write(header);
-        for(MotionItem item : items){
+        for (MotionItem item : items) {
             byte[] data = new byte[6];
-            data[0] = new Integer(item.isLed()?1:0).byteValue();
-            data[1] = new Integer(item.getArmleft()).byteValue();
-            data[2] = new Integer(item.getArmright()).byteValue();
-            data[3] = new Integer(item.getRotleft()).byteValue();
-            data[4] = new Integer(item.getRotright()).byteValue();
-            data[5] = new Integer(item.getTime()).byteValue();
+            data[0] = (byte)(item.isLed() ? 1 : 0);
+            data[1] = (byte)(item.getArmleft());
+            data[2] = (byte)(item.getArmright());
+            data[3] = (byte)(item.getRotleft().getIntValue());
+            data[4] = (byte)(item.getRotright().getIntValue());
+            data[5] = (byte)(item.getTime());
             bytes.write(data);
         }
-        
-        NdefRecord record = new NdefRecord(NdefRecord.TNF_MIME_MEDIA, mimeBytes, new byte[0], bytes.toByteArray());
-        
-        return new NdefMessage(new NdefRecord[]{record});
+
+        NdefRecord record = new NdefRecord(NdefRecord.TNF_MIME_MEDIA, mimeBytes, new byte[0],
+                bytes.toByteArray());
+
+        return new NdefMessage(new NdefRecord[] {
+            record
+        });
     }
 
 }
