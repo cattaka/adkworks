@@ -4,100 +4,169 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <GridLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/GridLayout1"
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1"
-        android:columnCount="2" >
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" >
 
-        <!-- LED -->
+        <LinearLayout
+            android:id="@+id/TimeLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            >
+            <TextView
+                android:id="@+id/TimeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                    android:text="000"
+                />
+            <SeekBar
+                android:id="@+id/TimeSeek"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                    android:max="50"
+                />
+        </LinearLayout>
 
-        <TextView
-            android:layout_gravity="left"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
-            android:text="LED of eyes" />
+        <ToggleButton
+            android:id="@+id/EyeLightToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/TimeLayout"
+            android:layout_centerHorizontal="true" />
 
-        <CheckBox
-            android:id="@+id/checkbox1"
-            android:layout_gravity="left"
-            android:checked="false" />
+        <TableLayout
+            android:id="@+id/UpperLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/EyeLightToggle" >
 
-        <Space android:layout_columnSpan="2" />
-        <!-- Arm -->
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" >
 
-        <TextView
-            android:layout_gravity="left"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
-            android:text="Left Arm Power&#xA;(0-255)" />
+                <SeekBar
+                    android:id="@+id/ArmLeftSeek"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:max="255"
+                    />
 
-        <EditText
-            android:id="@+id/editText1"
-            android:inputType="number"
-            android:text="1" />
+                <SeekBar
+                    android:id="@+id/ArmRightSeek"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:max="255"
+                    />
+            </TableRow>
 
-        <TextView
-            android:layout_gravity="left"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
-            android:text="Right Arm Power&#xA;(0-255)" />
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" >
 
-        <EditText
-            android:id="@+id/editText2"
-            android:layout_gravity="left"
-            android:inputType="number"
-            android:text="2" />
+                <TextView
+                    android:id="@+id/ArmLeftValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:text="0" />
 
-        <!-- Rotate -->
+                <TextView
+                    android:id="@+id/ArmRightValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:text="0" />
+            </TableRow>
+        </TableLayout>
 
-        <TextView
-            android:layout_gravity="left"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
-            android:text="Left Mortor Power&#xA;(0:STOP,1:FORWARD,2:REVERSE)" />
+        <LinearLayout
+            android:id="@+id/BottomLayout2"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true" >
 
-        <EditText
-            android:id="@+id/editText3"
-            android:layout_gravity="left"
-            android:inputType="number"
-            android:text="3" />
+            <RadioGroup
+                android:id="@+id/motorDirLeft"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true" >
 
-        <TextView
-            android:layout_gravity="right"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
-            android:text="Right Mortor Power&#xA;(0:STOP,1:FORWARD,2:REVERSE)" />
+                <RadioButton
+                    android:id="@+id/stopItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Stop" />
 
-        <EditText
-            android:id="@+id/editText4"
-            android:layout_gravity="left"
-            android:inputType="number"
-            android:text="4" />
+                <RadioButton
+                    android:id="@+id/forwardItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Forward" />
 
-        <!-- Time -->
+                <RadioButton
+                    android:id="@+id/reverseItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Reverse" />
+            </RadioGroup>
 
-        <TextView
-            android:layout_gravity="left"
-            android:layout_marginLeft="5dip"
-            android:layout_marginRight="5dip"
-            android:text="Time&#xA;(x100ms)" />
+            <RadioGroup
+                android:id="@+id/motorDirRight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true" >
 
-        <EditText
-            android:id="@+id/editText5"
-            android:layout_gravity="left"
-            android:inputType="number"
-            android:text="5" />
+                <RadioButton
+                    android:id="@+id/stopItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Stop" />
 
-        <Space android:layout_columnSpan="2" />
-    </GridLayout>
+                <RadioButton
+                    android:id="@+id/forwardItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Forward" />
+
+                <RadioButton
+                    android:id="@+id/reverseItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Reverse" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/BottomLayout2"
+            android:layout_below="@+id/UpperLayout"
+            android:src="@drawable/android_logo" />
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal" >
+
+        <Button
+            android:id="@+id/button0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete" />
 
         <Button
             android:id="@+id/button1"

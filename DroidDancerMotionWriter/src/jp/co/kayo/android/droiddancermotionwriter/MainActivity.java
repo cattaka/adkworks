@@ -21,6 +21,7 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -33,9 +34,24 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 public class MainActivity extends Activity {
+    static class MotionBundle {
+        int repeat;
+
+        List<MotionItem> motionItems;
+
+        private MotionBundle(int repeat, List<MotionItem> motionItems) {
+            super();
+            this.repeat = repeat;
+            this.motionItems = motionItems;
+        }
+    }
+
     private static final String TAG = "DroidDancerMotionWriter";
+
+    private ToggleButton mModeToggle;
 
     private TextView textView1;
 
@@ -50,6 +66,8 @@ public class MainActivity extends Activity {
     private List<MotionItem> items = new ArrayList<MotionItem>();
 
     private NfcAdapter nfcadapter;
+
+    private PendingIntent mPendingIntent;
 
     private IntentFilter[] nfcfilters = new IntentFilter[] {
         new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED)
@@ -70,6 +88,7 @@ public class MainActivity extends Activity {
 
         nfcadapter = NfcAdapter.getDefaultAdapter(this);
 
+        mModeToggle = (ToggleButton)findViewById(R.id.ModeToggle);
         listView1 = (ListView)findViewById(R.id.listView1);
         textView1 = (TextView)findViewById(R.id.textView1);
         seekBar1 = (SeekBar)findViewById(R.id.seekBar1);
@@ -126,6 +145,12 @@ public class MainActivity extends Activity {
                 startActivityForResult(intent, 100);
             }
         });
+
+        { // enable
+            Intent intent = new Intent(this, getClass());
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            mPendingIntent = PendingIntent.getActivity(this, 1, intent, 0);
+        }
     }
 
     @Override
@@ -137,23 +162,36 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 100 && resultCode == 100 && data != null) {
-            long uid = data.getLongExtra("uid", -1);
-            if (uid != -1) {
+        if (requestCode == 100) {
+            if (resultCode == RESULT_OK && data != null) {
+                long uid = data.getLongExtra("uid", -1);
+                if (uid != -1) {
+                    for (MotionItem item : items) {
+                        if (item.getUid() == uid) {
+                            item.setLed(data.getBooleanExtra("led", false));
+                            item.setArmleft(data.getIntExtra("armleft", 0));
+                            item.setArmright(data.getIntExtra("armright", 0));
+                            item.setRotleft((MotorDir)data.getSerializableExtra("rotleft"));
+                            item.setRotright((MotorDir)data.getSerializableExtra("rotright"));
+                            item.setTime(data.getIntExtra("time", 0));
+                            adapter.notifyDataSetChanged();
+                            break;
+                        }
+                    }
+                }
+            } else if (resultCode == RESULT_CANCELED) {
+                // none
+            } else if (resultCode == EditActivity.RESULT_DELETE) {
+                long uid = data.getLongExtra("uid", -1);
                 for (MotionItem item : items) {
                     if (item.getUid() == uid) {
-                        item.setLed(data.getBooleanExtra("led", false));
-                        item.setArmleft(data.getIntExtra("armleft", 0));
-                        item.setArmright(data.getIntExtra("armright", 0));
-                        item.setRotleft(MotorDir.parse(data.getIntExtra("rotleft", 0)));
-                        item.setRotright(MotorDir.parse(data.getIntExtra("rotright", 0)));
-                        item.setTime(data.getIntExtra("time", 0));
+                        items.remove(item);
+                        adapter.setData(items);
                         adapter.notifyDataSetChanged();
                         break;
                     }
                 }
             }
-
         }
     }
 
@@ -163,7 +201,27 @@ public class MainActivity extends Activity {
         String action = intent.getAction();
         if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
             Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-            writeNdefMotionTag(tag);
+            if (mModeToggle.isChecked()) {
+                writeNdefMotionTag(tag);
+            } else {
+                NdefMessage[] msgs;
+                Parcelable[] rawMsgs = intent
+                        .getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+                if (rawMsgs != null) {
+                    msgs = new NdefMessage[rawMsgs.length];
+                    for (int i = 0; i < rawMsgs.length; i++) {
+                        msgs[i] = (NdefMessage)rawMsgs[i];
+                    }
+
+                    MotionBundle bundle = readNdefMessages(tag, msgs);
+                    seekBar1.setProgress(bundle.repeat);
+                    if (bundle != null) {
+                        items = bundle.motionItems;
+                        adapter.setData(items);
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+            }
         }
     }
 
@@ -176,9 +234,34 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
-                getClass()), 0);
-        nfcadapter.enableForegroundDispatch(this, pendingIntent, nfcfilters, nfctechLists);
+        nfcadapter.enableForegroundDispatch(this, mPendingIntent, nfcfilters, nfctechLists);
+    }
+
+    private MotionBundle readNdefMessages(Tag tag, NdefMessage[] msgs) {
+        for (NdefMessage msg : msgs) {
+            List<MotionItem> infos = new ArrayList<MotionItem>();
+            NdefRecord rec = msg.getRecords()[0];
+            byte[] data = rec.getPayload();
+            int repeat = data[0];
+            int size = data[1];
+            int pos = 2;
+            for (int i = 0; i < size; i++) {
+                if (pos + 6 <= data.length) {
+                    MotionItem info = new MotionItem();
+                    info.setLed(data[pos++] != 0);
+                    info.setArmleft(0xFF & data[pos++]);
+                    info.setArmright(0xFF & data[pos++]);
+                    info.setRotleft(MotorDir.parse(data[pos++]));
+                    info.setRotright(MotorDir.parse(data[pos++]));
+                    info.setTime(data[pos++]);
+                    infos.add(info);
+                }
+            }
+            Toast.makeText(this, "Read succeed.", Toast.LENGTH_SHORT).show();
+            return new MotionBundle(repeat, infos);
+        }
+        Toast.makeText(this, "Read failed.", Toast.LENGTH_SHORT).show();
+        return null;
     }
 
     private void writeNdefMotionTag(Tag tag) {
@@ -190,7 +273,7 @@ public class MainActivity extends Activity {
                         ndef.connect();
                     }
                     ndef.format(createNdefMessage());
-                    Toast.makeText(this, "Write Success.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Write Succeed.", Toast.LENGTH_SHORT).show();
                 } finally {
                     ndef.close();
                 }
@@ -202,7 +285,7 @@ public class MainActivity extends Activity {
                     }
                     if (ndef.isWritable()) {
                         ndef.writeNdefMessage(createNdefMessage());
-                        Toast.makeText(this, "Write Success.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Write Succeed.", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(this, "Writing is not supported", Toast.LENGTH_SHORT).show();
                     }
@@ -213,10 +296,10 @@ public class MainActivity extends Activity {
 
         } catch (FormatException e) {
             Log.e(TAG, "FormatException", e);
-            Toast.makeText(this, "Writing Error", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Writing Error:" + e.getMessage(), Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Log.e(TAG, "IOException", e);
-            Toast.makeText(this, "Writing Error", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Writing Error:" + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
     }

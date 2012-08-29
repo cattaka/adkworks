@@ -37,10 +37,24 @@
         android:layout_weight="1" >
     </ListView>
 
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Add" />
-
+        android:orientation="horizontal"
+        >
+        <ToggleButton
+            android:id="@+id/ModeToggle"
+	        android:layout_width="0dp"
+	        android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textOn="WRITE MODE"
+            android:textOff="READ MODE"
+            />
+	    <Button
+	        android:id="@+id/button1"
+	        android:layout_width="0dp"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
+	        android:text="Add" />
+    </LinearLayout>
 </LinearLayout>

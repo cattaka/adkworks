@@ -47,8 +47,8 @@ public class MotionListAdapter extends ArrayAdapter<MotionItem> {
         holder.textView1.setText(Boolean.toString(item.isLed()));
         holder.textView2.setText(String.valueOf(item.getArmleft()));
         holder.textView3.setText(String.valueOf(item.getArmright()));
-        holder.textView4.setText(String.valueOf(item.getRotleft().getIntValue()));
-        holder.textView5.setText(String.valueOf(item.getRotright().getIntValue()));
+        holder.textView4.setText(item.getRotleft().name());
+        holder.textView5.setText(item.getRotright().name());
         holder.textView6.setText(String.valueOf(item.getTime()));
 
         return convertView;

@@ -10,7 +10,7 @@
         android:layout_gravity="left"
         android:layout_marginLeft="5dip"
         android:layout_marginRight="5dip"
-        android:text="RED" />
+        android:text="LED" />
 
     <TextView
         android:id="@+id/textView1"
@@ -23,7 +23,7 @@
         android:layout_gravity="left"
         android:layout_marginLeft="5dip"
         android:layout_marginRight="5dip"
-        android:text="Left Arm Power" />
+        android:text="Left Arm Angle" />
 
     <TextView
         android:id="@+id/textView2"
@@ -35,7 +35,7 @@
         android:layout_gravity="left"
         android:layout_marginLeft="5dip"
         android:layout_marginRight="5dip"
-        android:text="Right Arm Power" />
+        android:text="Right Arm Angle" />
 
     <TextView
         android:id="@+id/textView3"
@@ -47,7 +47,7 @@
         android:layout_gravity="left"
         android:layout_marginLeft="5dip"
         android:layout_marginRight="5dip"
-        android:text="Left Mortor Power" />
+        android:text="Left Mortor" />
 
     <TextView
         android:id="@+id/textView4"
@@ -59,7 +59,7 @@
         android:layout_gravity="right"
         android:layout_marginLeft="5dip"
         android:layout_marginRight="5dip"
-        android:text="Right Mortor Power" />
+        android:text="Right Mortor" />
 
     <TextView
         android:id="@+id/textView5"
@@ -71,7 +71,7 @@
         android:layout_gravity="left"
         android:layout_marginLeft="5dip"
         android:layout_marginRight="5dip"
-        android:text="Time" />
+        android:text="Time(x100ms)" />
 
     <TextView
         android:id="@+id/textView6"
@@ -79,5 +79,5 @@
         android:layout_columnSpan="2"
         android:text="5" />
 	<Space android:layout_columnSpan="2" />
-    
+
 </GridLayout>

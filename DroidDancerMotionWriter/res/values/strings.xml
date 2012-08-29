@@ -4,5 +4,10 @@
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_main">MainActivity</string>
+    <string-array name="motor_dir">
+        <item >STOP</item>
+        <item >FORWARD</item>
+        <item >REVERSE</item>
+    </string-array>
 
 </resources>
