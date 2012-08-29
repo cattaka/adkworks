@@ -59,8 +59,8 @@ void setup() {
   digitalWrite(PIN_MOTOR_R1, LOW);
   digitalWrite(PIN_MOTOR_R2, LOW);
   
-  initMyServo(0, 750, 2250, 0x7FFF, 0xffff);  // ZS
-  initMyServo(1, 750, 2250, 0x7FFF, 0xffff);  // ZS
+  initMyServo(0, 2250, 750, 0x7FFF, 0xffff);  // ZS
+  initMyServo(1, 2250, 750, 0x7FFF, 0xffff);  // ZS
 
 //  digitalWrite (LED_PIN, HIGH);
   mMemoryMap.setStreamInterface(&mAndroidAccessoryStream);

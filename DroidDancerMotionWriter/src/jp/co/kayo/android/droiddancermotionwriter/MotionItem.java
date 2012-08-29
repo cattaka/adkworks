@@ -18,10 +18,10 @@ public class MotionItem {
         }
 
         public static MotorDir parse(int intValue) {
-            if (intValue < 0) {
-                return REVERSE;
-            } else if (intValue > 0) {
-                return FORWARD;
+            for (MotorDir item : values()) {
+                if (item.getIntValue() == intValue) {
+                    return item;
+                }
             }
             return STOP;
         }

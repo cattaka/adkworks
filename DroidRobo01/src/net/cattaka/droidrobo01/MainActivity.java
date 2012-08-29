@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
-import net.cattaka.droidrobo01.R;
 
 public class MainActivity extends FragmentActivity implements View.OnClickListener {
     @Override
@@ -16,6 +15,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         findViewById(R.id.buttonAuthTwitter).setOnClickListener(this);
         findViewById(R.id.buttonAdjustment).setOnClickListener(this);
         findViewById(R.id.buttonMonitorTwitter).setOnClickListener(this);
+        findViewById(R.id.buttonMonitorNfc).setOnClickListener(this);
     }
 
     @Override
@@ -28,6 +28,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             startActivity(intent);
         } else if (v.getId() == R.id.buttonMonitorTwitter) {
             Intent intent = new Intent(this, MonitorTwitterActivity.class);
+            startActivity(intent);
+        } else if (v.getId() == R.id.buttonMonitorNfc) {
+            Intent intent = new Intent(this, MonitorNfcActivity.class);
             startActivity(intent);
         } else if (v.getId() == R.id.buttonAdjustment) {
             Intent intent = new Intent(this, AdjustmentActivity.class);

@@ -1,7 +1,6 @@
 
 package net.cattaka.droidrobo01;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,43 +10,51 @@ import net.cattaka.droidrobo01.robo.RoboPauseInfo;
 import net.cattaka.droidrobo01.robo.RoboPauseInfo.MotorDir;
 import net.cattaka.droidrobo01.service.AdkService;
 import net.cattaka.droidrobo01.service.IAdkService;
-import twitter4j.FilterQuery;
-import twitter4j.Status;
-import twitter4j.StatusDeletionNotice;
-import twitter4j.StatusListener;
-import twitter4j.TwitterStream;
-import twitter4j.TwitterStreamFactory;
-import twitter4j.conf.ConfigurationBuilder;
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
+import android.os.Parcelable;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.TextView;
 
-public class MonitorTwitterActivity extends Activity implements View.OnClickListener {
-    private static final int EVENT_ADD_MESSAGE = 1;
-
+public class MonitorNfcActivity extends Activity {
     private static final int EVENT_DRIVE = 2;
 
-    private MonitorTwitterActivity me = this;
+    private MonitorNfcActivity me = this;
+
+    private TextView mMotionCountText;
 
     private IAdkService mAdkService;
 
-    private ListView mTweetListView;
+    private NfcAdapter mNfcAdapter;
 
-    private TwitterStream mTwitterStream;
+    private IntentFilter[] mNfcFilters = new IntentFilter[] {
+        new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED)
+    };
+
+    private String[][] mNfcTechLists = new String[][] {
+        new String[] {
+            Ndef.class.getName()
+        }
+    };
+
+    private PendingIntent mPendingIntent;
 
     private ArmSetting mSetting;
 
@@ -76,13 +83,7 @@ public class MonitorTwitterActivity extends Activity implements View.OnClickList
 
     private Handler mHandler = new Handler() {
         public void handleMessage(android.os.Message msg) {
-            if (msg.what == EVENT_ADD_MESSAGE) {
-                if (mTweetListView.getAdapter() instanceof ArrayAdapter<?>) {
-                    if (msg.obj instanceof String) {
-                        addMessage((String)msg.obj);
-                    }
-                }
-            } else if (msg.what == EVENT_DRIVE) {
+            if (msg.what == EVENT_DRIVE) {
                 startDriveRobo();
             }
         };
@@ -91,12 +92,41 @@ public class MonitorTwitterActivity extends Activity implements View.OnClickList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.monitor_twitter);
+        setContentView(R.layout.monitor_nfc);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        findViewById(R.id.DanceButton).setOnClickListener(this);
+        mMotionCountText = (TextView)findViewById(R.id.motionCountText);
 
-        mTweetListView = (ListView)findViewById(R.id.TweetListView);
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+
+        { // enable
+            Intent intent = new Intent(this, getClass());
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            mPendingIntent = PendingIntent.getActivity(this, 1, intent, 0);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        String action = intent.getAction();
+        if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
+            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+            NdefMessage[] msgs;
+            Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+            if (rawMsgs != null) {
+                msgs = new NdefMessage[rawMsgs.length];
+                for (int i = 0; i < rawMsgs.length; i++) {
+                    msgs[i] = (NdefMessage)rawMsgs[i];
+                }
+
+                List<RoboPauseInfo> infos = readNdefMessages(tag, msgs);
+                if (infos.size() > 0) {
+                    mPauseQueue.clear();
+                    mPauseQueue.addAll(infos);
+                }
+            }
+        }
     }
 
     @Override
@@ -113,114 +143,19 @@ public class MonitorTwitterActivity extends Activity implements View.OnClickList
             mSetting.loadPreference(pref);
         }
 
-        startMonitor();
         startDriveRobo();
+
+        mNfcAdapter.enableForegroundDispatch(this, mPendingIntent, mNfcFilters, mNfcTechLists);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        stopMonitor();
         stopDriveRobo();
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.DanceButton) {
-            addMessageAsync(null);
-        }
-    }
-
-    private void startMonitor() {
-        stopMonitor();
-
-        ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.setOAuthAccessToken(mSetting.getAccessToken());
-        builder.setOAuthAccessTokenSecret(mSetting.getAccessTokenSecret());
-        builder.setOAuthConsumerKey(Constants.getTwConsumerKey(this));
-        builder.setOAuthConsumerSecret(Constants.getTwConsumerSecret(this));
-        mTwitterStream = new TwitterStreamFactory(builder.build()).getInstance();
-
-        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1);
-        mTweetListView.setAdapter(adapter);
-        StatusListener listener = new StatusListener() {
-            public void onStatus(Status status) {
-                DateFormat df = android.text.format.DateFormat.getTimeFormat(me);
-                StringBuffer sb = new StringBuffer();
-                sb.append("@" + status.getUser().getScreenName() + " - " + status.getText());
-                if (status.getCreatedAt() != null) {
-                    sb.append("(");
-                    sb.append(df.format(status.getCreatedAt()));
-                    sb.append(")");
-                }
-                addMessageAsync(sb.toString());
-            }
-
-            public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {
-                addMessageAsync("Got a status deletion notice id:"
-                        + statusDeletionNotice.getStatusId());
-            }
-
-            public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
-                addMessageAsync("Got track limitation notice:" + numberOfLimitedStatuses);
-            }
-
-            public void onScrubGeo(long userId, long upToStatusId) {
-                addMessageAsync("Got scrub_geo event userId:" + userId + " upToStatusId:"
-                        + upToStatusId);
-            }
-
-            public void onException(Exception ex) {
-                Log.e("Debug", ex.getMessage(), ex);
-            }
-        };
-        mTwitterStream.addListener(listener);
-
-        List<Long> follow = new ArrayList<Long>();
-        List<String> track = new ArrayList<String>();
-        {
-            String trackWords = mSetting.getTrackWords();
-            if (trackWords == null || trackWords.length() == 0) {
-                trackWords = "droidrobo";
-            }
-            String[] tracks = trackWords.split("\\s+");
-            for (String str : tracks) {
-                track.add(str);
-            }
-        }
-
-        long[] followArray = new long[follow.size()];
-        for (int i = 0; i < follow.size(); i++) {
-            followArray[i] = follow.get(i);
-        }
-        String[] trackArray = track.toArray(new String[track.size()]);
-
-        mTwitterStream.filter(new FilterQuery(0, followArray, trackArray));
-
-        // mTwitterStream.sample();
-    }
-
-    private void addMessage(String str) {
-        @SuppressWarnings("unchecked")
-        ArrayAdapter<String> adapter = (ArrayAdapter<String>)mTweetListView.getAdapter();
-        adapter.insert(str, 0);
-        if (adapter.getCount() >= 20) {
-            while (adapter.getCount() > 10) {
-                adapter.remove(adapter.getItem(10));
-            }
-        }
-
-        adapter.notifyDataSetChanged();
+        mNfcAdapter.disableForegroundDispatch(this);
     }
 
     private void addMessageAsync(String str) {
-        if (str != null) {
-            Message msg = new Message();
-            msg.what = EVENT_ADD_MESSAGE;
-            msg.obj = str;
-            mHandler.sendMessage(msg);
-        }
         if (mPauseQueue.size() == 0) {
             mPauseQueue
                     .add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.25f, 0.25f));
@@ -259,14 +194,35 @@ public class MonitorTwitterActivity extends Activity implements View.OnClickList
         }
     }
 
-    private void stopMonitor() {
-        if (mTwitterStream != null) {
-            mTwitterStream.shutdown();
-            mTwitterStream = null;
+    private List<RoboPauseInfo> readNdefMessages(Tag tag, NdefMessage[] msgs) {
+        List<RoboPauseInfo> infos = new ArrayList<RoboPauseInfo>();
+        for (NdefMessage msg : msgs) {
+            NdefRecord rec = msg.getRecords()[0];
+            byte[] data = rec.getPayload();
+            int repeat = data[0];
+            int size = data[1];
+            int pos = 2;
+            List<RoboPauseInfo> tmpList = new ArrayList<RoboPauseInfo>(infos);
+            for (int i = 0; i < size; i++) {
+                RoboPauseInfo info = new RoboPauseInfo();
+                info.setEyeLight(data[pos++] != 0);
+                info.setArmLeftAngle((float)(0xFF & data[pos++]) / (float)0xFF);
+                info.setArmRightAngle((float)(0xFF & data[pos++]) / (float)0xFF);
+                info.setMotorDirLeft(MotorDir.parse(data[pos++]));
+                info.setMotorDirRight(MotorDir.parse(data[pos++]));
+                info.setDucation(data[pos++] * 100);
+                tmpList.add(info);
+            }
+            for (int i = 0; i < repeat; i++) {
+                infos.addAll(tmpList);
+            }
         }
+        return infos;
     }
 
     private void startDriveRobo() {
+        mMotionCountText.setText(String.valueOf(mPauseQueue.size()));
+
         RoboPauseInfo rpInfo = mPauseQueue.poll();
         if (rpInfo == null) {
             rpInfo = ROBO_PAUSE_STOP;

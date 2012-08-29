@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:text="Robot Arm 01"
+        android:text="Droid Robo 01"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <Button
@@ -27,7 +27,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:text="Auth Twitter" />
-    
+
     <Button
         android:id="@+id/buttonAdjustment"
         android:layout_width="wrap_content"
@@ -43,5 +43,11 @@
         android:layout_alignParentRight="true"
         android:layout_below="@+id/textView1"
         android:text="Monitor Twitter" />
-
+    <Button
+        android:id="@+id/buttonMonitorNfc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/buttonMonitorTwitter"
+        android:text="Monitor Nfc" />
 </RelativeLayout>
