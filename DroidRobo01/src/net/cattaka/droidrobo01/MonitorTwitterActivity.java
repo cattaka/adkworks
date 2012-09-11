@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Random;
 
 import net.cattaka.droidrobo01.robo.RoboPauseInfo;
 import net.cattaka.droidrobo01.robo.RoboPauseInfo.MotorDir;
@@ -40,6 +41,8 @@ public class MonitorTwitterActivity extends Activity implements View.OnClickList
     private static final int EVENT_ADD_MESSAGE = 1;
 
     private static final int EVENT_DRIVE = 2;
+
+    private Random mRandom = new Random();
 
     private MonitorTwitterActivity me = this;
 
@@ -222,40 +225,104 @@ public class MonitorTwitterActivity extends Activity implements View.OnClickList
             mHandler.sendMessage(msg);
         }
         if (mPauseQueue.size() == 0) {
-            mPauseQueue
-                    .add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.25f, 0.25f));
-            mPauseQueue.add(new RoboPauseInfo(false, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
-                    0.25f));
-            mPauseQueue
-                    .add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.25f, 0.25f));
-            mPauseQueue.add(new RoboPauseInfo(false, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
-                    0.25f));
+            addMotion();
+        }
+    }
 
-            mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 1000, 0.75f,
-                    0.75f));
-            mPauseQueue
-                    .add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 1.00f, 0.50f));
-            mPauseQueue
-                    .add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.50f, 1.00f));
-            mPauseQueue
-                    .add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 1.00f, 0.50f));
-            mPauseQueue
-                    .add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.50f, 1.00f));
-            mPauseQueue
-                    .add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 1.00f, 0.50f));
-            mPauseQueue
-                    .add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.50f, 1.00f));
-            mPauseQueue.add(new RoboPauseInfo(false, MotorDir.STOP, MotorDir.STOP, 500, 0.75f,
-                    0.75f));
+    private void addMotion() {
+        switch (mRandom.nextInt(3)) {
+            case 0: {
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
+                        0.25f));
+                mPauseQueue.add(new RoboPauseInfo(false, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
+                        0.25f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
+                        0.25f));
+                mPauseQueue.add(new RoboPauseInfo(false, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
+                        0.25f));
 
-            mPauseQueue.add(new RoboPauseInfo(true, MotorDir.FORWARD, MotorDir.REVERSE, 200, 0.75f,
-                    0.75f));
-            mPauseQueue.add(new RoboPauseInfo(true, MotorDir.REVERSE, MotorDir.FORWARD, 200, 0.75f,
-                    0.75f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.5f,
+                        0.5f));
 
-            mPauseQueue
-                    .add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 1000, 1.0f, 1.0f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.FORWARD, MotorDir.REVERSE, 500,
+                        1.0f, 0.0f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.REVERSE, MotorDir.FORWARD, 500,
+                        0.0f, 1.0f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.FORWARD, MotorDir.REVERSE, 500,
+                        1.0f, 0.0f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.REVERSE, MotorDir.FORWARD, 500,
+                        0.0f, 1.0f));
 
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 1000, 1.0f,
+                        1.0f));
+                break;
+            }
+            case 1: {
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
+                        0.25f));
+                mPauseQueue.add(new RoboPauseInfo(false, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
+                        0.25f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
+                        0.25f));
+                mPauseQueue.add(new RoboPauseInfo(false, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
+                        0.25f));
+
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 1000, 0.75f,
+                        0.75f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 1.00f,
+                        0.50f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.50f,
+                        1.00f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 1.00f,
+                        0.50f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.50f,
+                        1.00f));
+                mPauseQueue.add(new RoboPauseInfo(false, MotorDir.STOP, MotorDir.STOP, 500, 0.75f,
+                        0.75f));
+
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.FORWARD, MotorDir.REVERSE, 200,
+                        0.75f, 0.75f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.REVERSE, MotorDir.FORWARD, 200,
+                        0.75f, 0.75f));
+
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 1000, 1.0f,
+                        1.0f));
+                break;
+            }
+            case 2: {
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
+                        0.25f));
+                mPauseQueue.add(new RoboPauseInfo(false, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
+                        0.25f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
+                        0.25f));
+                mPauseQueue.add(new RoboPauseInfo(false, MotorDir.STOP, MotorDir.STOP, 500, 0.25f,
+                        0.25f));
+
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.0f,
+                        0.0f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 1.0f,
+                        0.0f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.0f,
+                        0.0f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.0f,
+                        1.0f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 0.0f,
+                        0.0f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 500, 1.0f,
+                        1.0f));
+
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.REVERSE, MotorDir.FORWARD, 200,
+                        1.0f, 1.0f));
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.FORWARD, MotorDir.REVERSE, 200,
+                        1.0f, 1.0f));
+
+                mPauseQueue.add(new RoboPauseInfo(true, MotorDir.STOP, MotorDir.STOP, 1000, 1.0f,
+                        1.0f));
+                break;
+            }
+            default:
+                break;
         }
     }
 
