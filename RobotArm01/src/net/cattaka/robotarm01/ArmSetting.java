@@ -38,7 +38,7 @@ public class ArmSetting {
 
     private boolean servo1Invert = true;
 
-    private boolean servo2Invert = true;
+    private boolean servo2Invert = false;
 
     private boolean servo3Invert = true;
 

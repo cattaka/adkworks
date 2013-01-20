@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+<RelativeLayout
+    android:id="@+id/operationPanel"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" >
+
+    <TableLayout
+        android:id="@+id/tableLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true" >
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="X" />
+
+            <TextView
+                android:id="@+id/accelXText"
+                android:layout_width="60sp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="127" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Y" />
+
+            <TextView
+                android:id="@+id/accelYText"
+                android:layout_width="60sp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="127" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Z" />
+
+            <TextView
+                android:id="@+id/accelZText"
+                android:layout_width="60sp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="127" />
+        </TableRow>
+    </TableLayout>
+
+    <TextView
+        android:id="@+id/standStateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/tableLayout1"
+        android:layout_alignParentLeft="true"
+        android:layout_span="2"
+        android:text="StandState" />
+
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="AI Mode"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <ToggleButton
+        android:id="@+id/enableAiToggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/textView1"
+        android:text="ToggleButton" />
+
+    <Button
+        android:id="@+id/resetAccelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/standStateText"
+        android:layout_alignParentLeft="true"
+        android:text="Reset" />
+</RelativeLayout>
+
+    <net.cattaka.droiball.view.MyJavaCameraView
+        android:id="@+id/cameraView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@+id/operationPanel"
+         />
+</RelativeLayout>

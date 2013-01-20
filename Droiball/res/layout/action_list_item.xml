@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    style="@style/ListItem"
+    >
+
+    <TextView
+        android:id="@+id/actionNameText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Large Text"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <ImageButton
+            android:id="@+id/editButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_input_get" />
+
+        <ImageButton
+            android:id="@+id/copyButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/editButton"
+            android:src="@android:drawable/stat_notify_more" />
+
+        <ImageButton
+            android:id="@+id/upButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/editButton"
+            android:src="@android:drawable/arrow_up_float" />
+
+        <ImageButton
+            android:id="@+id/downButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/upButton"
+            android:layout_toRightOf="@+id/editButton"
+            android:src="@android:drawable/arrow_down_float" />
+
+        <ImageButton
+            android:id="@+id/deleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/editButton"
+            android:layout_toRightOf="@+id/downButton"
+            android:src="@android:drawable/ic_delete" />
+    </RelativeLayout>
+</LinearLayout>

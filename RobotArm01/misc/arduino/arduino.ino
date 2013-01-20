@@ -5,7 +5,7 @@
 #include <MemoryMapLib.h>
 #include <Servo.h>
 
-#define LED_PIN 0
+#define LED_PIN 12
 
 #define TARGET_PIN   2
 #define SERVO_NUM    6
@@ -66,7 +66,8 @@ void loop() {
   if (mAndroidAccessory.isConnected()) {
     analogWrite(LED_PIN,255);
     mMemoryMap.poll();
-  } else {
+  } 
+  else {
     analogWrite(LED_PIN,0);
     mAndroidAccessoryStream.setInterface(&mAndroidAccessory);
   }
@@ -85,10 +86,10 @@ void loop() {
 
     int val = map(myServos[i].currentValue, 0, 0xFFFF, myServos[i].pulseMin, myServos[i].pulseMax);
     myServos[i].servo.writeMicroseconds(val);
-//    if (i==2) {
-//      analogWrite(11, (myServos[i].currentValue >> 8) & 0xFF);
-//      analogWrite(12, targetValue & 0xFF);
-//    }
+    //    if (i==2) {
+    //      analogWrite(11, (myServos[i].currentValue >> 8) & 0xFF);
+    //      analogWrite(12, targetValue & 0xFF);
+    //    }
   }
   delay(POWER_DELAY);
 }
@@ -104,5 +105,6 @@ void jobReceive(unsigned char RWOP,unsigned char addr,unsigned char* value) {
     }
   }
 }
+
 
 

@@ -119,7 +119,7 @@ public class ControllerActivity extends Activity implements View.OnClickListener
         viewBundles.add(new ViewBundle(R.id.valueBar1, R.id.valueText1, 0, armSetting
                 .getServo1Min(), armSetting.getServo1Max(), true));
         viewBundles.add(new ViewBundle(R.id.valueBar2, R.id.valueText2, 0, armSetting
-                .getServo2Min(), armSetting.getServo2Max(), true));
+                .getServo2Min(), armSetting.getServo2Max(), false));
         viewBundles.add(new ViewBundle(R.id.valueBar3, R.id.valueText3, 0, armSetting
                 .getServo3Min(), armSetting.getServo3Max(), true));
         viewBundles.add(new ViewBundle(R.id.valueBar4, R.id.valueText4, 0, armSetting
