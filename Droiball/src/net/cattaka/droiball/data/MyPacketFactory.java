@@ -59,7 +59,7 @@ public class MyPacketFactory implements IPacketFactory<MyPacket> {
                     break;
                 }
                 case CHECKSUM: {
-                    int t = 0xFF & (packetType + opCode + (0xFF & len) + (0xFF & (len << 8)));
+                    int t = 0xFF & (packetType + opCode + (0xFF & len) + (0xFF & (len >> 8)));
                     if (r == t) {
                         if (len > 0) {
                             dataLen = 0;
