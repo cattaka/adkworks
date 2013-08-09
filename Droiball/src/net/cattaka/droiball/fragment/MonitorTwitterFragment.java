@@ -31,6 +31,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class MonitorTwitterFragment extends BaseFragment implements View.OnClickListener,
@@ -176,7 +177,11 @@ public class MonitorTwitterFragment extends BaseFragment implements View.OnClick
         }
         String[] trackArray = track.toArray(new String[track.size()]);
 
-        mTwitterStream.filter(new FilterQuery(0, followArray, trackArray));
+        try {
+            mTwitterStream.filter(new FilterQuery(0, followArray, trackArray));
+        } catch (IllegalStateException e) {
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
 
         // mTwitterStream.sample();
     }

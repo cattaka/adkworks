@@ -3,6 +3,8 @@ package net.cattaka.droiball.view;
 
 import java.util.List;
 
+import net.cattaka.droiball.util.MyCvCameraViewFrame;
+
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -175,6 +177,30 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
         return result;
     }
 
+    protected Size calculateCameraFrameSize(List<?> supportedSizes, ListItemAccessor accessor,
+            int surfaceWidth, int surfaceHeight) {
+        int calcWidth = Integer.MAX_VALUE;
+        int calcHeight = Integer.MAX_VALUE;
+
+        for (Object size : supportedSizes) {
+            int width = accessor.getWidth(size);
+            int height = accessor.getHeight(size);
+
+            if (width >= surfaceWidth || height >= surfaceHeight) {
+                if (width <= calcWidth && height <= calcHeight) {
+                    calcWidth = (int)width;
+                    calcHeight = (int)height;
+                }
+            }
+        }
+        if (calcWidth == Integer.MAX_VALUE || calcHeight == Integer.MAX_VALUE) {
+            return super.calculateCameraFrameSize(supportedSizes, accessor, surfaceWidth,
+                    surfaceHeight);
+        } else {
+            return new Size(calcWidth, calcHeight);
+        }
+    }
+
     protected void releaseCamera() {
         synchronized (this) {
             if (mCamera != null) {
@@ -262,22 +288,25 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                 }
 
                 if (!mStopThread) {
+                    MyCvCameraViewFrame frame = null;
                     switch (mPreviewFormat) {
                         case Highgui.CV_CAP_ANDROID_COLOR_FRAME_RGBA:
                             Imgproc.cvtColor(mBaseMat, mFrameChain[mChainIdx],
                                     Imgproc.COLOR_YUV2RGBA_NV21, 4);
+                            frame = new MyCvCameraViewFrame(mFrameChain[mChainIdx], null);
                             break;
                         case Highgui.CV_CAP_ANDROID_GREY_FRAME:
                             mFrameChain[mChainIdx] = mBaseMat.submat(0, mFrameHeight, 0,
                                     mFrameWidth);
+                            frame = new MyCvCameraViewFrame(null, mFrameChain[mChainIdx]);
                             break;
                         default:
                             Log.e(TAG,
                                     "Invalid frame format! Only RGBA and Gray Scale are supported!");
                     }
-                    ;
-                    if (!mFrameChain[mChainIdx].empty())
-                        deliverAndDrawFrame(mFrameChain[mChainIdx]);
+
+                    if (frame != null)
+                        deliverAndDrawFrame(frame);
                     mChainIdx = 1 - mChainIdx;
                 }
             } while (!mStopThread);

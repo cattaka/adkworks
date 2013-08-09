@@ -3,17 +3,20 @@ package net.cattaka.droiball.view;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
 
 import android.content.Context;
 import android.content.res.Configuration;
 import android.util.AttributeSet;
 
 public class MyJavaCameraView extends JavaCameraView {
-    private Mat tmpImage;
+    private Mat tmpImage1;
+
+    private Mat tmpImage2;
 
     public MyJavaCameraView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        tmpImage1 = new Mat();
+        tmpImage2 = new Mat();
     }
 
     @Override
@@ -33,24 +36,41 @@ public class MyJavaCameraView extends JavaCameraView {
     }
 
     @Override
-    protected void deliverAndDrawFrame(Mat frame) {
+    protected void deliverAndDrawFrame(final CvCameraViewFrame frame) {
         Configuration config = getResources().getConfiguration();
         if (config.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            if (tmpImage == null) {
-                tmpImage = new Mat();
-            }
-            if (tmpImage.width() != frame.height() || tmpImage.height() != frame.width()) {
-                tmpImage.create(new Size(frame.height(), frame.width()), frame.type());
-            }
-            Core.transpose(frame, tmpImage);
-            Core.flip(tmpImage, tmpImage, -1);
-            super.deliverAndDrawFrame(tmpImage);
+            CvCameraViewFrame flipFrame = new CvCameraViewFrame() {
+                @Override
+                public Mat rgba() {
+                    Core.transpose(frame.rgba(), tmpImage1);
+                    Core.flip(tmpImage1, tmpImage1, -1);
+                    return tmpImage1;
+                }
+
+                @Override
+                public Mat gray() {
+                    Core.transpose(frame.gray(), tmpImage2);
+                    Core.flip(tmpImage2, tmpImage2, -1);
+                    return tmpImage2;
+                }
+            };
+            super.deliverAndDrawFrame(flipFrame);
         } else {
-            if (tmpImage == null) {
-                tmpImage = new Mat();
-            }
-            Core.flip(frame, tmpImage, 1);
-            super.deliverAndDrawFrame(tmpImage);
+            CvCameraViewFrame flipFrame = new CvCameraViewFrame() {
+                @Override
+                public Mat rgba() {
+                    Core.flip(frame.rgba(), tmpImage1, 1);
+                    return tmpImage1;
+                }
+
+                @Override
+                public Mat gray() {
+                    Core.flip(frame.gray(), tmpImage2, 1);
+                    return tmpImage2;
+                }
+            };
+            super.deliverAndDrawFrame(flipFrame);
         }
     }
+
 }
