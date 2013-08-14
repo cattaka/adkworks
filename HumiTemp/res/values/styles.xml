@@ -1,0 +1,11 @@
+<resources>
+
+    <style name="AppTheme" parent="android:Theme.Light" />
+    <style name="SeekBlock">
+　　　　<item name="android:padding">5dp</item>
+　　</style>
+   <style name="ListItem">
+　　　　<item name="android:padding">10dp</item>
+　　</style>
+
+</resources>
