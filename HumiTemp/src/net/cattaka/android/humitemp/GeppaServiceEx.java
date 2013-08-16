@@ -9,10 +9,13 @@ import net.cattaka.android.humitemp.data.OpCode;
 import net.cattaka.android.humitemp.db.DbHelper;
 import net.cattaka.android.humitemp.entity.HumiTempModel;
 import net.cattaka.libgeppa.AdkGeppaService;
+import net.cattaka.libgeppa.data.ConnectionState;
 import net.cattaka.libgeppa.data.PacketWrapper;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 
 public class GeppaServiceEx extends AdkGeppaService<MyPacket> {
     private static final int EVENT_RECORD = 2;
@@ -21,14 +24,14 @@ public class GeppaServiceEx extends AdkGeppaService<MyPacket> {
 
     private boolean requesting = false;
 
+    private WakeLock mWakeLock;
+
     private static Handler sHandler = new Handler() {
         public void handleMessage(Message msg) {
             Object[] objs = (Object[])msg.obj;
             GeppaServiceEx target = (GeppaServiceEx)objs[0];
             if (msg.what == EVENT_RECORD) {
-                sHandler.sendMessageDelayed(sHandler.obtainMessage(EVENT_RECORD, new Object[] {
-                    target
-                }), RECORD_INTERVAL);
+                target.scheduleRecord();
                 target.requesting = true;
                 target.sendRequestPacket();
             }
@@ -47,15 +50,25 @@ public class GeppaServiceEx extends AdkGeppaService<MyPacket> {
     public void onCreate() {
         super.onCreate();
         mDbHelper = new DbHelper(this);
-        sHandler.obtainMessage(EVENT_RECORD, new Object[] {
-            this
-        }).sendToTarget();
+
+        PowerManager pm = (PowerManager)getSystemService(POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Constants.TAG);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         sHandler.removeMessages(EVENT_RECORD);
+        if (mWakeLock.isHeld()) {
+            mWakeLock.release();
+        }
+    }
+
+    private void scheduleRecord() {
+        mWakeLock.acquire(RECORD_INTERVAL * 2 / 3);
+        sHandler.sendMessageDelayed(sHandler.obtainMessage(EVENT_RECORD, new Object[] {
+            this
+        }), RECORD_INTERVAL);
     }
 
     @Override
@@ -90,6 +103,16 @@ public class GeppaServiceEx extends AdkGeppaService<MyPacket> {
                     requesting = false;
                 }
             }
+        }
+    }
+
+    @Override
+    protected void onConnectionStateChanged(ConnectionState state) {
+        super.onConnectionStateChanged(state);
+        if (state == ConnectionState.CONNECTED) {
+            sHandler.sendMessage(sHandler.obtainMessage(EVENT_RECORD, new Object[] {
+                this
+            }));
         }
     }
 }
