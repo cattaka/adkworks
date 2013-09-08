@@ -8,7 +8,7 @@ import net.cattaka.android.humitemp.data.MyPacketFactory;
 import net.cattaka.android.humitemp.data.OpCode;
 import net.cattaka.android.humitemp.db.DbHelper;
 import net.cattaka.android.humitemp.entity.HumiTempModel;
-import net.cattaka.libgeppa.AdkGeppaService;
+import net.cattaka.libgeppa.AdkPassiveGeppaService;
 import net.cattaka.libgeppa.data.ConnectionState;
 import net.cattaka.libgeppa.data.PacketWrapper;
 import android.content.Intent;
@@ -17,7 +17,7 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 
-public class GeppaServiceEx extends AdkGeppaService<MyPacket> {
+public class GeppaServiceEx extends AdkPassiveGeppaService<MyPacket> {
     private static final int EVENT_RECORD = 2;
 
     private static final int RECORD_INTERVAL = 60000;
