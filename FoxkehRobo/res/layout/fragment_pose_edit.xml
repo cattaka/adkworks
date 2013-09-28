@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <TableRow
+        style="@style/SeekBlock"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" >
+
+        <RelativeLayout
+            android:id="@+id/leftEarBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <include layout="@layout/block_seek" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rightEarBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <include layout="@layout/block_seek" />
+        </RelativeLayout>
+    </TableRow>
+
+    <TableRow
+        style="@style/SeekBlock"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" >
+
+        <RelativeLayout
+            android:id="@+id/headYawBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <include layout="@layout/block_seek" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/headPitchBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <include layout="@layout/block_seek" />
+        </RelativeLayout>
+    </TableRow>
+
+    <TableRow
+        style="@style/SeekBlock"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" >
+
+        <RelativeLayout
+            android:id="@+id/leftArmBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <include layout="@layout/block_seek" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rightArmBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <include layout="@layout/block_seek" />
+        </RelativeLayout>
+    </TableRow>
+
+    <TableRow
+        style="@style/SeekBlock"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" >
+
+        <RelativeLayout
+            android:id="@+id/leftFootBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <include layout="@layout/block_seek" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rightFootBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <include layout="@layout/block_seek" />
+        </RelativeLayout>
+    </TableRow>
+
+    <TableRow
+        style="@style/SeekBlock"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" >
+
+        <RelativeLayout
+            android:id="@+id/tailYawBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <include layout="@layout/block_seek" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/tailPitchBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <include layout="@layout/block_seek" />
+        </RelativeLayout>
+    </TableRow>
+
+    <TableRow
+        style="@style/SeekBlock"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" >
+
+        <RelativeLayout
+            android:id="@+id/timeBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <include layout="@layout/block_seek" />
+        </RelativeLayout>
+    </TableRow>
+
+</TableLayout>

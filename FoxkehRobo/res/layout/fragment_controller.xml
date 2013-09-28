@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical" >
+
+        <FrameLayout
+            android:id="@+id/poseEditFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <!--
+        <fragment
+            android:id="@+id/poseEditFragment"
+            android:name="net.cattaka.android.foxkehrobo.fragment.PoseEditFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+            -->
+    </ScrollView>
+
+</RelativeLayout>
