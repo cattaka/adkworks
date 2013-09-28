@@ -4,9 +4,10 @@ package net.cattaka.android.foxkehrobo.activity;
 import net.cattaka.android.foxkehrobo.Constants;
 import net.cattaka.android.foxkehrobo.FoxkehRoboService;
 import net.cattaka.android.foxkehrobo.R;
-import net.cattaka.android.foxkehrobo.data.FrPacket;
-import net.cattaka.android.foxkehrobo.data.OpCode;
+import net.cattaka.android.foxkehrobo.core.ServiceWrapper;
 import net.cattaka.android.foxkehrobo.entity.PoseModel;
+import net.cattaka.android.foxkehrobo.fragment.PoseEditFragment;
+import net.cattaka.android.foxkehrobo.fragment.PoseEditFragment.IPoseEditFragmentListener;
 import net.cattaka.libgeppa.IActiveGeppaService;
 import net.cattaka.libgeppa.IActiveGeppaServiceListener;
 import net.cattaka.libgeppa.data.ConnectionState;
@@ -14,7 +15,6 @@ import net.cattaka.libgeppa.data.DeviceEventCode;
 import net.cattaka.libgeppa.data.DeviceInfo;
 import net.cattaka.libgeppa.data.DeviceState;
 import net.cattaka.libgeppa.data.PacketWrapper;
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -22,16 +22,14 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
-public class PoseEditActivity extends Activity implements View.OnClickListener {
+public class PoseEditActivity extends FragmentActivity implements View.OnClickListener,
+        IPoseEditFragmentListener {
     public static final String EXTRA_EDIT_MODE = "editMode";
 
     public static final String EXTRA_POSE_MODEL = "poseModel";
@@ -57,102 +55,23 @@ public class PoseEditActivity extends Activity implements View.OnClickListener {
      * return (checkBox.isChecked()) ? toggleButton.isChecked() : null; } }
      */
 
-    private class SeekBarBundle implements OnSeekBarChangeListener {
-        private TextView textView;
-
-        private CheckBox checkBox;
-
-        private SeekBar seekBar;
-
-        private boolean invert;
-
-        public SeekBarBundle(int blockResId, String name, int max, boolean invert) {
-            super();
-            View block = findViewById(blockResId);
-            textView = (TextView)block.findViewById(R.id.blockText);
-            seekBar = (SeekBar)block.findViewById(R.id.blockSeek);
-            checkBox = (CheckBox)block.findViewById(R.id.blockCheck);
-            this.invert = invert;
-
-            checkBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton button, boolean checked) {
-                    seekBar.setEnabled(checked);
-                }
-            });
-
-            checkBox.setText(name);
-            checkBox.setChecked(true);
-            seekBar.setMax(max);
-            seekBar.setProgress(max / 2);
-            seekBar.setOnSeekBarChangeListener(this);
-
-            checkBox.setVisibility(mEditMode ? View.VISIBLE : View.INVISIBLE);
-        }
-
-        @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {
-            sendPose(true);
-            updateTextView(seekBar);
-        }
-
-        @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {
-        }
-
-        @Override
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            if (fromUser) {
-                sendPose(false);
-            }
-            updateTextView(seekBar);
-        }
-
-        private void updateTextView(SeekBar seekBar) {
-            int value = seekBar.getProgress();
-            if (invert) {
-                value = seekBar.getMax() - value;
-            }
-            textView.setText(String.valueOf(value));
-        }
-
-        public void setByte(Byte b) {
-            checkBox.setChecked(b != null);
-            if (b != null) {
-                if (invert) {
-                    seekBar.setProgress(seekBar.getMax() - (0xFF & b));
-                } else {
-                    seekBar.setProgress(0xFF & b);
-                }
-            }
-        }
-
-        public Byte getByte() {
-            if (checkBox.isChecked()) {
-                int r = (invert) ? seekBar.getMax() - seekBar.getProgress() : seekBar.getProgress();
-                return (byte)r;
-            } else {
-                return null;
-            }
-        }
-    }
-
     private ServiceConnection mServiceConnection = new ServiceConnection() {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mGeppaService = null;
+            mServiceWrapper = null;
         }
 
         @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mGeppaService = IActiveGeppaService.Stub.asInterface(service);
-            sendPose(true);
+        public void onServiceConnected(ComponentName name, IBinder binder) {
+            IActiveGeppaService service = IActiveGeppaService.Stub.asInterface(binder);
+            mServiceWrapper = new ServiceWrapper(service);
+            mPoseEditFragment.savePoseModel(mPoseModel);
+            mServiceWrapper.sendPose(mPoseModel);
 
             try {
-                mGeppaServiceListenerSeq = mGeppaService
-                        .registerServiceListener(mGeppaServiceListener);
-                mConnectionStateText.setText(mGeppaService.getCurrentDeviceInfo().getLabel());
+                mGeppaServiceListenerSeq = service.registerServiceListener(mGeppaServiceListener);
+                mConnectionStateText.setText(service.getCurrentDeviceInfo().getLabel());
             } catch (RemoteException e) {
                 // Impossible, ignore
                 Log.w(Constants.TAG, e.getMessage(), e);
@@ -162,6 +81,8 @@ public class PoseEditActivity extends Activity implements View.OnClickListener {
 
     private int mGeppaServiceListenerSeq = -1;
 
+    private PoseModel mPoseModel;
+
     private IActiveGeppaServiceListener.Stub mGeppaServiceListener = new IActiveGeppaServiceListener.Stub() {
         public void onDeviceStateChanged(DeviceState deviceState, DeviceEventCode deviceEventCode,
                 DeviceInfo deviceInfo) throws RemoteException {
@@ -170,48 +91,26 @@ public class PoseEditActivity extends Activity implements View.OnClickListener {
 
         @Override
         public void onReceivePacket(PacketWrapper paramPacketWrapper) throws RemoteException {
-            // TODO Auto-generated method stub
+            // none
         }
     };
 
-    private boolean mEditMode = true;
-
-    private PoseModel mPoseModel;;
-
-    private IActiveGeppaService mGeppaService;
+    private ServiceWrapper mServiceWrapper;
 
     private long lastSendControl = 0;
 
-    private SeekBarBundle mHeadYaw;
-
-    private SeekBarBundle mHeadPitch;
-
-    private SeekBarBundle mArmLeft;
-
-    private SeekBarBundle mArmRight;
-
-    private SeekBarBundle mFootLeft;
-
-    private SeekBarBundle mFootRight;
-
-    private SeekBarBundle mEarLeft;
-
-    private SeekBarBundle mEarRight;
-
-    private SeekBarBundle mTailYaw;
-
-    private SeekBarBundle mTailPitch;
-
-    private SeekBarBundle mTime;
-
     private TextView mConnectionStateText;
+
+    private PoseEditFragment mPoseEditFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.pose_edit);
+        setContentView(R.layout.activity_pose_edit);
 
-        mEditMode = (getIntent().getBooleanExtra(EXTRA_EDIT_MODE, true));
+        FragmentManager fr = getSupportFragmentManager();
+        mPoseEditFragment = (PoseEditFragment)fr.findFragmentById(R.id.poseEditFragment);
+
         {
             Object obj = getIntent().getSerializableExtra(EXTRA_POSE_MODEL);
             if (obj instanceof PoseModel) {
@@ -234,27 +133,7 @@ public class PoseEditActivity extends Activity implements View.OnClickListener {
             }
         }
 
-        // Pick up views
-        mHeadYaw = new SeekBarBundle(R.id.headYawBlock, "Head yaw", Constants.SEEK_MAX_VALUE, true);
-        mHeadPitch = new SeekBarBundle(R.id.headPitchBlock, "Head pitch", Constants.SEEK_MAX_VALUE,
-                true);
-        mArmLeft = new SeekBarBundle(R.id.leftArmBlock, "Left arm", Constants.SEEK_MAX_VALUE, true);
-        mArmRight = new SeekBarBundle(R.id.rightArmBlock, "Right arm", Constants.SEEK_MAX_VALUE,
-                false);
-        mFootLeft = new SeekBarBundle(R.id.leftFootBlock, "Left foot", Constants.SEEK_MAX_VALUE,
-                true);
-        mFootRight = new SeekBarBundle(R.id.rightFootBlock, "Right foot", Constants.SEEK_MAX_VALUE,
-                false);
-        mEarLeft = new SeekBarBundle(R.id.leftEarBlock, "Left ear", Constants.SEEK_MAX_VALUE, true);
-        mEarRight = new SeekBarBundle(R.id.rightEarBlock, "Right ear", Constants.SEEK_MAX_VALUE,
-                false);
-        mTailYaw = new SeekBarBundle(R.id.tailYawBlock, "Tail yaw", Constants.SEEK_MAX_VALUE, true);
-        mTailPitch = new SeekBarBundle(R.id.tailPitchBlock, "Tail pitch", Constants.SEEK_MAX_VALUE,
-                true);
-        mTime = new SeekBarBundle(R.id.timeBlock, "Time", 100, false);
         mConnectionStateText = (TextView)findViewById(R.id.connectionStateText);
-
-        mTime.checkBox.setVisibility(View.INVISIBLE);
 
         // Setting event handler
         findViewById(R.id.finishButton).setOnClickListener(this);
@@ -262,7 +141,8 @@ public class PoseEditActivity extends Activity implements View.OnClickListener {
         // Setting initial values
         mConnectionStateText.setText(ConnectionState.UNKNOWN.name());
 
-        loadPoseModel();
+        mPoseEditFragment.setListener(this);
+        mPoseEditFragment.loadPoseModel(mPoseModel);
     }
 
     @Override
@@ -278,7 +158,7 @@ public class PoseEditActivity extends Activity implements View.OnClickListener {
         super.onPause();
         if (mGeppaServiceListenerSeq != -1) {
             try {
-                mGeppaService.unregisterServiceListener(mGeppaServiceListenerSeq);
+                mServiceWrapper.getService().unregisterServiceListener(mGeppaServiceListenerSeq);
             } catch (RemoteException e) {
                 // impossible, ignore
                 Log.w(Constants.TAG, e.getMessage(), e);
@@ -292,7 +172,7 @@ public class PoseEditActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.finishButton) {
-            savePoseModel();
+            mPoseEditFragment.savePoseModel(mPoseModel);
             Intent data = new Intent();
             data.putExtra(EXTRA_POSE_MODEL, mPoseModel);
             setResult(RESULT_OK, data);
@@ -300,55 +180,19 @@ public class PoseEditActivity extends Activity implements View.OnClickListener {
         }
     }
 
-    private void sendPose(boolean forceSend) {
+    @Override
+    public void onPoseChanged(boolean operationFinished) {
         { // Limit number of times not to send too many times
             long currTime = SystemClock.currentThreadTimeMillis();
-            if (!forceSend) {
+            if (!operationFinished) {
                 if (currTime - lastSendControl <= MINIMUM_INTERVAL_SEND_CONTROL) {
                     return;
                 }
             }
             lastSendControl = currTime;
         }
-        savePoseModel();
-        byte[] data = mPoseModel.toPose();
 
-        FrPacket packet = new FrPacket(OpCode.POSE, data.length, data);
-        try {
-            if (mGeppaService != null) {
-                mGeppaService.sendPacket(new PacketWrapper(packet));
-            }
-        } catch (RemoteException e) {
-            Log.w(Constants.TAG, e.getMessage(), e);
-        }
-    }
-
-    private void loadPoseModel() {
-        mHeadYaw.setByte(mPoseModel.getHeadYaw());
-        mHeadPitch.setByte(mPoseModel.getHeadPitch());
-        mArmLeft.setByte(mPoseModel.getArmLeft());
-        mArmRight.setByte(mPoseModel.getArmRight());
-        mFootLeft.setByte(mPoseModel.getFootLeft());
-        mFootRight.setByte(mPoseModel.getFootRight());
-        mEarLeft.setByte(mPoseModel.getEarLeft());
-        mEarRight.setByte(mPoseModel.getEarRight());
-        mTailYaw.setByte(mPoseModel.getTailYaw());
-        mTailPitch.setByte(mPoseModel.getTailPitch());
-        mTime.setByte((byte)(mPoseModel.getTime() / 100));
-    }
-
-    private void savePoseModel() {
-        mPoseModel.setNonKeyValues( //
-                mHeadYaw.getByte(), //
-                mHeadPitch.getByte(), //
-                mArmLeft.getByte(), //
-                mArmRight.getByte(), //
-                mFootLeft.getByte(), //
-                mFootRight.getByte(), //
-                mEarLeft.getByte(), //
-                mEarRight.getByte(), //
-                mTailYaw.getByte(), //
-                mTailPitch.getByte(), //
-                mTime.getByte() * 100);
+        mPoseEditFragment.savePoseModel(mPoseModel);
+        mServiceWrapper.sendPose(mPoseModel);
     }
 }

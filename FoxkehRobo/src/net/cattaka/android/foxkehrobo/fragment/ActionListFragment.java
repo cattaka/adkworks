@@ -28,7 +28,7 @@ public class ActionListFragment extends BaseFragment implements View.OnClickList
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.action_list, null);
+        View view = inflater.inflate(R.layout.fragment_action_list, null);
         mActionListView = (ListView)view.findViewById(R.id.actionList);
 
         view.findViewById(R.id.editButton).setOnClickListener(this);

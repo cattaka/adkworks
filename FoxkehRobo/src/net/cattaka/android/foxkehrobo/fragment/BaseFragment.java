@@ -39,6 +39,9 @@ public abstract class BaseFragment extends Fragment implements IDeviceAdapterLis
         getAppStub().replacePrimaryFragment(fragment, withBackStack);
     }
 
+    public void onServiceConnected(ServiceWrapper serviceWrapper) {
+    }
+
     /** IDeviceAdapterListener */
     @Override
     public void onDeviceStateChanged(DeviceState state, DeviceEventCode code, DeviceInfo deviceInfo) {

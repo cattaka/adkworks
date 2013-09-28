@@ -1,11 +1,11 @@
 #include <SoftwareSerial.h>
-#include <Servo.h>
+#include "SoftwareServo.h"
 #include "Geppa.h"
 
 // =============================
 // Debug setting
-#define DUMP_RAW
-#define DUMP_PACKET
+// #define DUMP_RAW
+// #define DUMP_PACKET
 
 // =============================
 // variables for RBT-001
@@ -22,7 +22,7 @@ SoftwareSerial gDebug(RBT_RX, RBT_TX);
 #define SERVO_FOOT_RIGHT 6
 #define SERVO_HEAD_YAW   A3
 #define SERVO_HEAD_PITCH A4
-#define SERVO_TAIL_YAW   A6
+#define SERVO_TAIL_YAW   A2
 #define SERVO_TAIL_PITCH A5
 #define SERVO_EAR_LEFT   12
 #define SERVO_EAR_RIGHT  11
@@ -38,7 +38,7 @@ SoftwareSerial gDebug(RBT_RX, RBT_TX);
 //#define OFFSET_ACCEL_Z 0
 
 struct MyServo {
-  Servo servo;
+  SoftwareServo servo;
   int pulseMin;
   int pulseMax;
   long currentValue;
@@ -48,12 +48,15 @@ struct MyServo {
 struct MyServo myServos[SERVO_NUM];
 
 void initMyServo(int idx, int pin, int pulseMin, int pulseMax, long initValue, long stepWidth) {
+  pinMode(pin, OUTPUT);
   myServos[idx].pulseMin = pulseMin;
   myServos[idx].pulseMax = pulseMax;
   myServos[idx].currentValue = initValue;
   myServos[idx].value = initValue;
   myServos[idx].stepWidth = stepWidth;
-  myServos[idx].servo.attach(pin, pulseMin, pulseMax);
+  myServos[idx].servo.attach(pin);
+  myServos[idx].servo.setMinimumPulse(pulseMin);
+  myServos[idx].servo.setMaximumPulse(pulseMax);
 }
 // =============================
 
@@ -64,7 +67,7 @@ void setup()
 {
   // ボーレートを指定して通信開始
   gDebug.begin(9600);
-  Serial.begin(9600);
+  Serial.begin(38400);
   gDebug.println("Serial connected");
 //  pinMode(LED_EYE_LEFT, OUTPUT);
 //  pinMode(LED_EYE_RIGHT, OUTPUT);
@@ -118,7 +121,7 @@ void loop()
 #endif
     }
   }
-
+  
   {  // Controlling servo angles
     for (int i=0;i<SERVO_NUM;i++) {
       long targetValue = myServos[i].value;
@@ -134,12 +137,13 @@ void loop()
       int val = map(myServos[i].currentValue, 0, 0xFF, 0, 180);
       myServos[i].servo.write(val);
     }
+    SoftwareServo::refresh();
   }
   delay(10);
 }
 
 void handleRecvPacket(unsigned char packetType, unsigned char opCode, int dataLen, unsigned char* data) {
-#ifdef DUMP_PACKETa
+#ifdef DUMP_PACKET
   gDebug.print('(');
   gDebug.print(packetType, HEX);
   gDebug.print(',');
@@ -192,11 +196,11 @@ void handleRecvPacket(unsigned char packetType, unsigned char opCode, int dataLe
 //      digitalWrite(LED_EYE_RIGHT, (val & 2) ? HIGH:LOW);
     } else if (opCode == 3) {
       // POSE
-      if (dataLen != SERVO_NUM + 3) {
-        gDebug.print("dataLen is not (SERVO_NUM + 2 + 1).\n");
+      if (dataLen != SERVO_NUM + 2) {
+        gDebug.print("dataLen is not (SERVO_NUM + 2).\n");
       } else {
         int flags = (int)data[0] | (((int)data[1]) << 8);
-        int led = data[SERVO_NUM+2];
+        // int led = data[SERVO_NUM+2];
         for (int i=0;i<SERVO_NUM;i++) {
           if (flags & (1<<i)) {
             myServos[i].value = data[i+2];

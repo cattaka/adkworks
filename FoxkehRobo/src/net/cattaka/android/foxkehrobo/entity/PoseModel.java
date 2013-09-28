@@ -153,10 +153,10 @@ public class PoseModel implements Serializable {
                 | ((footRight != null) ? (1 << 3) : 0) //
                 | ((headYaw != null) ? (1 << 4) : 0) //
                 | ((headPitch != null) ? (1 << 5) : 0) //
-                | ((earLeft != null) ? (1 << 6) : 0) //
-                | ((earRight != null) ? (1 << 7) : 0) //
-                | ((tailYaw != null) ? (1 << 8) : 0) //
-                | ((tailPitch != null) ? (1 << 9) : 0); //
+                | ((tailYaw != null) ? (1 << 6) : 0) //
+                | ((tailPitch != null) ? (1 << 7) : 0) //
+                | ((earLeft != null) ? (1 << 8) : 0) //
+                | ((earRight != null) ? (1 << 9) : 0); //
         byte[] data = new byte[] {
                 (byte)(0xFF & flags), //
                 (byte)(0xFF & (flags >> 8)), //
@@ -166,10 +166,10 @@ public class PoseModel implements Serializable {
                 (byte)(0xFF & toPrimitive(footRight)), //
                 (byte)(0xFF & toPrimitive(headYaw)), //
                 (byte)(0xFF & toPrimitive(headPitch)), //
-                (byte)(0xFF & toPrimitive(earLeft)), //
-                (byte)(0xFF & toPrimitive(earRight)), //
                 (byte)(0xFF & toPrimitive(tailYaw)), //
                 (byte)(0xFF & toPrimitive(tailPitch)), //
+                (byte)(0xFF & toPrimitive(earLeft)), //
+                (byte)(0xFF & toPrimitive(earRight)), //
 
         //
         //
