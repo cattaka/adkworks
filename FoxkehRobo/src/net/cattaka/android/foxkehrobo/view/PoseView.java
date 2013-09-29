@@ -1,6 +1,7 @@
 
 package net.cattaka.android.foxkehrobo.view;
 
+import net.cattaka.android.foxkehrobo.Constants;
 import net.cattaka.android.foxkehrobo.R;
 import net.cattaka.android.foxkehrobo.entity.PoseModel;
 import android.content.Context;
@@ -57,6 +58,18 @@ public class PoseView extends TableLayout {
         tailYaw = (ProgressBar)findViewById(R.id.tailYaw);
         tailPitch = (ProgressBar)findViewById(R.id.tailPitch);
         time = (ProgressBar)findViewById(R.id.time);
+
+        earLeft.setMax(Constants.SEEK_MAX_VALUE);
+        earRight.setMax(Constants.SEEK_MAX_VALUE);
+        headYaw.setMax(Constants.SEEK_MAX_VALUE);
+        headPitch.setMax(Constants.SEEK_MAX_VALUE);
+        armLeft.setMax(Constants.SEEK_MAX_VALUE);
+        armRight.setMax(Constants.SEEK_MAX_VALUE);
+        footLeft.setMax(Constants.SEEK_MAX_VALUE);
+        footRight.setMax(Constants.SEEK_MAX_VALUE);
+        tailYaw.setMax(Constants.SEEK_MAX_VALUE);
+        tailPitch.setMax(Constants.SEEK_MAX_VALUE);
+        time.setMax(Constants.SEEK_MAX_VALUE);
     }
 
     private void setValue(ProgressBar bar, Byte value, boolean invert) {
