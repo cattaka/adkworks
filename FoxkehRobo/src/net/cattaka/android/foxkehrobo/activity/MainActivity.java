@@ -12,6 +12,7 @@ import net.cattaka.android.foxkehrobo.core.ServiceWrapper;
 import net.cattaka.android.foxkehrobo.data.FrPacket;
 import net.cattaka.android.foxkehrobo.db.FoxkehRoboDatabase;
 import net.cattaka.android.foxkehrobo.fragment.ConnectFragment;
+import net.cattaka.android.foxkehrobo.opencv.DetectionBasedTracker;
 import net.cattaka.libgeppa.IActiveGeppaService;
 import net.cattaka.libgeppa.IActiveGeppaServiceListener;
 import net.cattaka.libgeppa.adapter.IDeviceAdapterListener;
@@ -211,4 +212,8 @@ public class MainActivity extends FragmentActivity implements IAppStub {
         return mPreference;
     }
 
+    @Override
+    public DetectionBasedTracker getNativeDetector() {
+        return null;
+    }
 }

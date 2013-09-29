@@ -6,6 +6,7 @@ import net.cattaka.android.foxkehrobo.core.MyPreference;
 import net.cattaka.android.foxkehrobo.core.ServiceWrapper;
 import net.cattaka.android.foxkehrobo.data.FrPacket;
 import net.cattaka.android.foxkehrobo.db.FoxkehRoboDatabase;
+import net.cattaka.android.foxkehrobo.opencv.DetectionBasedTracker;
 import net.cattaka.libgeppa.adapter.IDeviceAdapterListener;
 import net.cattaka.libgeppa.data.DeviceEventCode;
 import net.cattaka.libgeppa.data.DeviceInfo;
@@ -32,6 +33,10 @@ public abstract class BaseFragment extends Fragment implements IDeviceAdapterLis
 
     public MyPreference getMyPreference() {
         return getAppStub().getMyPreference();
+    }
+
+    public DetectionBasedTracker getNativeDetector() {
+        return getAppStub().getNativeDetector();
     }
 
     /** IAppStub */

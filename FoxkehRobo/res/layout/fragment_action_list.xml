@@ -26,13 +26,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
         android:layout_below="@+id/editButton"
-                 android:divider="@android:color/black"
-         android:dividerHeight="2dp"
-         >
+        android:layout_toRightOf="@+id/poseView"
+        android:divider="@android:color/black"
+        android:dividerHeight="2dp" >
 
     </ListView>
 
+    <net.cattaka.android.foxkehrobo.view.PoseView
+        android:id="@+id/poseView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true" >
+    </net.cattaka.android.foxkehrobo.view.PoseView>
 
 </RelativeLayout>

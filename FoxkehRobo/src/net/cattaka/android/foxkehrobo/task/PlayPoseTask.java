@@ -11,12 +11,14 @@ import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.util.Log;
 
-public class PlayPoseTask extends AsyncTask<ActionModel, Void, Void> {
+public class PlayPoseTask extends AsyncTask<ActionModel, PoseModel, Void> {
     private IAppStub mAppStub;
 
     private PlayPoseTaskListener mListener;
 
     public interface PlayPoseTaskListener {
+        public void onPlayPoseTaskUpdate(PoseModel model);
+
         public void onPlayPoseTaskFinish();
     }
 
@@ -37,6 +39,7 @@ public class PlayPoseTask extends AsyncTask<ActionModel, Void, Void> {
                     break outer;
                 }
                 byte[] data = poseModel.toPose();
+                publishProgress(poseModel);
                 FrPacket packet = new FrPacket(OpCode.POSE, data.length, data);
                 mAppStub.getServiceWrapper().sendPacket(packet);
                 try {
@@ -51,6 +54,14 @@ public class PlayPoseTask extends AsyncTask<ActionModel, Void, Void> {
             }
         }
         return null;
+    }
+
+    @Override
+    protected void onProgressUpdate(PoseModel... values) {
+        super.onProgressUpdate(values);
+        if (mListener != null) {
+            mListener.onPlayPoseTaskUpdate(values[0]);
+        }
     }
 
     @Override

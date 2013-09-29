@@ -6,8 +6,11 @@ import java.util.List;
 import net.cattaka.android.foxkehrobo.R;
 import net.cattaka.android.foxkehrobo.activity.ActionListEditActivity;
 import net.cattaka.android.foxkehrobo.entity.ActionModel;
+import net.cattaka.android.foxkehrobo.entity.PoseModel;
 import net.cattaka.android.foxkehrobo.task.PlayPoseTask;
+import net.cattaka.android.foxkehrobo.task.PlayPoseTask.PlayPoseTaskListener;
 import net.cattaka.android.foxkehrobo.view.ActionListAdapter;
+import net.cattaka.android.foxkehrobo.view.PoseView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -18,7 +21,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
 public class ActionListFragment extends BaseFragment implements View.OnClickListener,
-        OnItemClickListener {
+        OnItemClickListener, PlayPoseTaskListener {
 
     private ListView mActionListView;
 
@@ -26,10 +29,13 @@ public class ActionListFragment extends BaseFragment implements View.OnClickList
 
     private PlayPoseTask mPlayPoseTask;
 
+    private PoseView mPoseView;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_action_list, null);
         mActionListView = (ListView)view.findViewById(R.id.actionList);
+        mPoseView = (PoseView)view.findViewById(R.id.poseView);
 
         view.findViewById(R.id.editButton).setOnClickListener(this);
 
@@ -71,7 +77,17 @@ public class ActionListFragment extends BaseFragment implements View.OnClickList
             mPlayPoseTask = null;
         }
         ActionModel actionModel = mAdapter.getItem(position);
-        mPlayPoseTask = new PlayPoseTask(getAppStub(), null);
+        mPlayPoseTask = new PlayPoseTask(getAppStub(), this);
         mPlayPoseTask.execute(actionModel);
+    }
+
+    @Override
+    public void onPlayPoseTaskFinish() {
+        mPlayPoseTask = null;
+    }
+
+    @Override
+    public void onPlayPoseTaskUpdate(PoseModel model) {
+        mPoseView.setValues(model);
     }
 }

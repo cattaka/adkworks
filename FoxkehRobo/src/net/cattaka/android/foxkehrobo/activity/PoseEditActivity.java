@@ -71,7 +71,7 @@ public class PoseEditActivity extends FragmentActivity implements View.OnClickLi
 
             try {
                 mGeppaServiceListenerSeq = service.registerServiceListener(mGeppaServiceListener);
-                mConnectionStateText.setText(service.getCurrentDeviceInfo().getLabel());
+                mConnectionStateText.setText(String.valueOf(service.getCurrentDeviceInfo()));
             } catch (RemoteException e) {
                 // Impossible, ignore
                 Log.w(Constants.TAG, e.getMessage(), e);
@@ -86,7 +86,7 @@ public class PoseEditActivity extends FragmentActivity implements View.OnClickLi
     private IActiveGeppaServiceListener.Stub mGeppaServiceListener = new IActiveGeppaServiceListener.Stub() {
         public void onDeviceStateChanged(DeviceState deviceState, DeviceEventCode deviceEventCode,
                 DeviceInfo deviceInfo) throws RemoteException {
-            mConnectionStateText.setText(deviceState.name());
+            mConnectionStateText.setText(String.valueOf(deviceState));
         }
 
         @Override

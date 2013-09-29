@@ -3,6 +3,7 @@ package net.cattaka.android.foxkehrobo.core;
 
 import net.cattaka.android.foxkehrobo.data.FrPacket;
 import net.cattaka.android.foxkehrobo.db.FoxkehRoboDatabase;
+import net.cattaka.android.foxkehrobo.opencv.DetectionBasedTracker;
 import net.cattaka.libgeppa.adapter.IDeviceAdapterListener;
 import android.support.v4.app.Fragment;
 
@@ -20,4 +21,6 @@ public interface IAppStub {
     public boolean unregisterDeviceAdapterListener(IDeviceAdapterListener<FrPacket> listener);
 
     public void setKeepScreen(boolean flag);
+
+    public DetectionBasedTracker getNativeDetector();
 }

@@ -1,6 +1,10 @@
 
 package net.cattaka.android.foxkehrobo.activity;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +17,11 @@ import net.cattaka.android.foxkehrobo.core.ServiceWrapper;
 import net.cattaka.android.foxkehrobo.data.FrPacket;
 import net.cattaka.android.foxkehrobo.db.FoxkehRoboDatabase;
 import net.cattaka.android.foxkehrobo.fragment.ActionListFragment;
+import net.cattaka.android.foxkehrobo.fragment.AiModeFragment;
 import net.cattaka.android.foxkehrobo.fragment.BaseFragment;
 import net.cattaka.android.foxkehrobo.fragment.ConnectFragment;
 import net.cattaka.android.foxkehrobo.fragment.ControllerFragment;
+import net.cattaka.android.foxkehrobo.opencv.DetectionBasedTracker;
 import net.cattaka.libgeppa.IActiveGeppaService;
 import net.cattaka.libgeppa.IActiveGeppaServiceListener;
 import net.cattaka.libgeppa.adapter.IDeviceAdapterListener;
@@ -24,7 +30,13 @@ import net.cattaka.libgeppa.data.DeviceEventCode;
 import net.cattaka.libgeppa.data.DeviceInfo;
 import net.cattaka.libgeppa.data.DeviceState;
 import net.cattaka.libgeppa.data.PacketWrapper;
+
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -79,7 +91,8 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
         }
 
         private Fragment[] fragments = new Fragment[] {
-                new ConnectFragment(), new ActionListFragment(), new ControllerFragment(),
+                new ConnectFragment(), new AiModeFragment(), new ActionListFragment(),
+                new ControllerFragment(),
         };
 
         @Override
@@ -151,7 +164,56 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
         }
     };
 
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS: {
+                    Log.i(Constants.TAG, "OpenCV loaded successfully");
+
+                    // Load native library after(!) OpenCV initialization
+                    System.loadLibrary("detection_based_tracker");
+
+                    try {
+                        // load cascade file from application resources
+                        InputStream is = getResources().openRawResource(
+                                R.raw.lbpcascade_frontalface);
+                        File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
+                        mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
+                        FileOutputStream os = new FileOutputStream(mCascadeFile);
+
+                        byte[] buffer = new byte[4096];
+                        int bytesRead;
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            os.write(buffer, 0, bytesRead);
+                        }
+                        is.close();
+                        os.close();
+
+                        mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(),
+                                0);
+
+                        cascadeDir.delete();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e(Constants.TAG, "Failed to load cascade. Exception thrown: " + e);
+                    }
+                }
+                    break;
+                default: {
+                    super.onManagerConnected(status);
+                }
+                    break;
+            }
+        }
+    };
+
     private AppActivity me = this;
+
+    private File mCascadeFile;
+
+    private DetectionBasedTracker mNativeDetector;
 
     private int mGeppaServiceListenerSeq = -1;
 
@@ -191,6 +253,7 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
     @Override
     protected void onResume() {
         super.onResume();
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_6, this, mLoaderCallback);
 
         { // opening DB
             if (mDbHelper != null) {
@@ -290,5 +353,10 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
     @Override
     public MyPreference getMyPreference() {
         return mMyPreference;
+    }
+
+    @Override
+    public DetectionBasedTracker getNativeDetector() {
+        return mNativeDetector;
     }
 }
