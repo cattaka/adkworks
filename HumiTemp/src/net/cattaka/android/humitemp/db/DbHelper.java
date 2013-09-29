@@ -16,17 +16,20 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DbHelper extends SQLiteOpenHelper {
 
     public DbHelper(Context context) {
-        super(context, Constants.DB_NAME, null, 1);
+        super(context, Constants.DB_NAME, null, 2);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(HumiTempModelHandler.SQL_CREATE_TABLE);
+        db.execSQL("CREATE INDEX IDX_humiTempModel ON humiTempModel(date)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // none
+        if (oldVersion == 1) {
+            db.execSQL("CREATE INDEX IDX_humiTempModel ON humiTempModel(date)");
+        }
     }
 
     public List<HumiTempModel> findHumiTempModel(Date from, Date to) {
