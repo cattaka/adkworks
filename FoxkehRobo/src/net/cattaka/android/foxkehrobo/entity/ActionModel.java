@@ -5,11 +5,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.cattaka.android.foxkehrobo.data.ActionBind;
 import net.cattaka.util.gendbhandler.Attribute;
 import net.cattaka.util.gendbhandler.GenDbHandler;
 
 @GenDbHandler(find = {
-        "id", "name", ":sort", ":sort-"
+        "id", "name", ":sort", ":sort-", "actionBind:sort"
 }, unique = {
         "name", "sort"
 })
@@ -23,10 +24,17 @@ public class ActionModel implements Serializable {
 
     private String name;
 
+    @Attribute(version = 2)
+    private ActionBind actionBind;
+
     @Attribute(persistent = false)
     private List<PoseModel> poseModels;
 
     public ActionModel() {
+    }
+
+    public ActionModel(ActionModel src) {
+        set(src);
     }
 
     public void set(ActionModel src) {
@@ -73,6 +81,14 @@ public class ActionModel implements Serializable {
 
     public void setPoseModels(List<PoseModel> poseModels) {
         this.poseModels = poseModels;
+    }
+
+    public ActionBind getActionBind() {
+        return actionBind;
+    }
+
+    public void setActionBind(ActionBind actionBind) {
+        this.actionBind = actionBind;
     }
 
 }

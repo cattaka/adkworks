@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
+import android.widget.TextView;
 
 public class ActionListFragment extends BaseFragment implements View.OnClickListener,
         OnItemClickListener, PlayPoseTaskListener {
@@ -29,6 +30,8 @@ public class ActionListFragment extends BaseFragment implements View.OnClickList
 
     private PlayPoseTask mPlayPoseTask;
 
+    private TextView mActionStateText;
+
     private PoseView mPoseView;
 
     @Override
@@ -36,6 +39,7 @@ public class ActionListFragment extends BaseFragment implements View.OnClickList
         View view = inflater.inflate(R.layout.fragment_action_list, null);
         mActionListView = (ListView)view.findViewById(R.id.actionList);
         mPoseView = (PoseView)view.findViewById(R.id.poseView);
+        mActionStateText = (TextView)view.findViewById(R.id.actionStateText);
 
         view.findViewById(R.id.editButton).setOnClickListener(this);
 
@@ -83,11 +87,13 @@ public class ActionListFragment extends BaseFragment implements View.OnClickList
 
     @Override
     public void onPlayPoseTaskFinish() {
+        mActionStateText.setText("---");
         mPlayPoseTask = null;
     }
 
     @Override
-    public void onPlayPoseTaskUpdate(PoseModel model) {
+    public void onPlayPoseTaskUpdate(String name, PoseModel model, int pos, int num) {
+        mActionStateText.setText(name + " : " + (pos + 1) + "/" + num);
         mPoseView.setValues(model);
     }
 }

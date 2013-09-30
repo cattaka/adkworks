@@ -1,11 +1,16 @@
 
 package net.cattaka.android.foxkehrobo.fragment;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import net.cattaka.android.foxkehrobo.Constants;
 import net.cattaka.android.foxkehrobo.R;
 import net.cattaka.android.foxkehrobo.core.MyPreference;
+import net.cattaka.android.foxkehrobo.data.ActionBind;
 import net.cattaka.android.foxkehrobo.data.FrPacket;
 import net.cattaka.android.foxkehrobo.data.OpCode;
 import net.cattaka.android.foxkehrobo.entity.ActionModel;
@@ -33,22 +38,23 @@ import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 public class AiModeFragment extends BaseFragment implements View.OnClickListener,
         PlayPoseTask.PlayPoseTaskListener {
-    public static final String ACTION_NAME_WAKE_FRONT = "Wake-front";
-
-    public static final String ACTION_NAME_WAKE_BACK = "Wake-back";
-
-    public static final String ACTION_NAME_WAVE_LEFT = "Wave-left";
-
-    public static final String ACTION_NAME_WAVE_RIGHT = "Wave-right";
-
-    public static final String[] ACTION_NAMES_RANDOM = new String[] {
-            "Head-dance", "Ear-dance", "Arm-dance", "Ear-cast-down"
-    };
-
+    // public static final String ACTION_NAME_WAKE_FRONT = "Wake-front";
+    //
+    // public static final String ACTION_NAME_WAKE_BACK = "Wake-back";
+    //
+    // public static final String ACTION_NAME_WAVE_LEFT = "Wave-left";
+    //
+    // public static final String ACTION_NAME_WAVE_RIGHT = "Wave-right";
+    //
+    // public static final String[] ACTION_NAMES_RANDOM = new String[] {
+    // "Head-dance", "Ear-dance", "Arm-dance", "Ear-cast-down"
+    // };
+    //
     private static final int EVENT_GET_ACCEL = 1;
 
     private static final int EVENT_ACTION_RANDOM = 2;
@@ -73,10 +79,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
                 mHandler.sendEmptyMessageDelayed(EVENT_GET_ACCEL, INTERVAL_GET_ACCEL);
             } else if (msg.what == EVENT_ACTION_RANDOM) {
                 if (isEnableAi() && mPlayPoseTask == null) {
-                    int n = mRandom.nextInt(ACTION_NAMES_RANDOM.length);
-                    String actionName = ACTION_NAMES_RANDOM[n];
-                    ActionModel actionModel = getDroiballDatabase().findActionModel(actionName,
-                            true);
+                    ActionModel actionModel = pickBindedActionRandom(ActionBind.RANDOM);
 
                     if (actionModel != null) {
                         mPlayPoseTask = new PlayPoseTask(getAppStub(), me);
@@ -106,7 +109,11 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
 
     private PlayPoseTask mPlayPoseTask;
 
+    private TextView mActionStateText;
+
     private PoseView mPoseView;
+
+    private Map<ActionBind, List<ActionModel>> mBindedActions;
 
     // Setting
     private Mat mRgba;
@@ -146,8 +153,11 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
 
         mEnableAiToggle = (ToggleButton)view.findViewById(R.id.enableAiToggle);
         mPoseView = (PoseView)view.findViewById(R.id.poseView);
+        mActionStateText = (TextView)view.findViewById(R.id.actionStateText);
 
         mPreference = new MyPreference(PreferenceManager.getDefaultSharedPreferences(getActivity()));
+
+        mBindedActions = new HashMap<ActionBind, List<ActionModel>>();
 
         mOpenCvCameraView = (NativeCameraView)view.findViewById(R.id.cameraView);
         mOpenCvCameraView.setCvCameraViewListener(mCvCameraViewListener);
@@ -163,6 +173,14 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
         super.onResume();
         mGray = new Mat();
         mRgba = new Mat();
+
+        { // バインドされたアクションのロード
+            mBindedActions.clear();
+            for (ActionBind bind : ActionBind.values()) {
+                List<ActionModel> models = getDroiballDatabase().findBindedActions(bind, true);
+                mBindedActions.put(bind, models);
+            }
+        }
     }
 
     @Override
@@ -211,18 +229,27 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
 
     private void checkWakeup() {
         if (mStandState == StandState.FACE_DOWN && mStandStateCount > 3) {
-            ActionModel model = getDroiballDatabase().findActionModel(ACTION_NAME_WAKE_FRONT, true);
+            ActionModel model = pickBindedActionRandom(ActionBind.WAKE_FRONT);
             if (model != null) {
                 mPlayPoseTask = new PlayPoseTask(getAppStub(), this);
                 mPlayPoseTask.execute(model);
             }
         } else if (mStandState == StandState.BACK && mStandStateCount > 3) {
-            ActionModel model = getDroiballDatabase().findActionModel(ACTION_NAME_WAKE_BACK, true);
+            ActionModel model = pickBindedActionRandom(ActionBind.WAKE_BACK);
             if (model != null) {
                 mPlayPoseTask = new PlayPoseTask(getAppStub(), this);
                 mPlayPoseTask.execute(model);
             }
 
+        }
+    }
+
+    private ActionModel pickBindedActionRandom(ActionBind bind) {
+        List<ActionModel> models = mBindedActions.get(bind);
+        if (models != null && models.size() > 0) {
+            return new ActionModel(models.get(mRandom.nextInt(models.size())));
+        } else {
+            return null;
         }
     }
 
@@ -296,15 +323,26 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
             return;
         }
         ActionModel actionModel;
-        if (index < length / 2) {
-            actionModel = getDroiballDatabase().findActionModel(ACTION_NAME_WAVE_LEFT, true);
-        } else {
-            actionModel = getDroiballDatabase().findActionModel(ACTION_NAME_WAVE_RIGHT, true);
+        { // 左手か右手かどっちの手を振るか選ぶ
+            if (index < length / 2) {
+                actionModel = pickBindedActionRandom(ActionBind.WAVE_LEFT);
+            } else {
+                actionModel = pickBindedActionRandom(ActionBind.WAVE_RIGHT);
+            }
+            if (actionModel == null) {
+                // 見つからない場合はスタンド状態を設定する
+                actionModel = new ActionModel();
+                actionModel.setPoseModels(new ArrayList<PoseModel>());
+                PoseModel poseModel = new PoseModel();
+                poseModel.makeStandPose();
+                poseModel.setTime(10);
+                actionModel.getPoseModels().add(poseModel);
+            }
         }
-        { // 頭の方向を変える
+        { // 頭の方向を変える。ついでに耳をちょっと動かす
             PoseModel headPoseModel = new PoseModel();
             headPoseModel.setHeadYaw((byte)(0x30 + (0xA0 * index / length)));
-            headPoseModel.setTime(500);
+            headPoseModel.setTime(200);
             {
                 PoseModel pm = new PoseModel(headPoseModel);
                 pm.setEarLeft((byte)0xFF);
@@ -329,24 +367,20 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
                 pm.setEarRight((byte)0x7F);
                 actionModel.getPoseModels().add(3, pm);
             }
-            {
-                PoseModel pm = new PoseModel();
-                pm.makeStandPose();
-                pm.setTime(500);
-                actionModel.getPoseModels().add(pm);
-            }
         }
         mPlayPoseTask = new PlayPoseTask(getAppStub(), this);
         mPlayPoseTask.execute(actionModel);
     }
 
     @Override
-    public void onPlayPoseTaskUpdate(PoseModel model) {
+    public void onPlayPoseTaskUpdate(String name, PoseModel model, int pos, int num) {
+        mActionStateText.setText(name + " : " + (pos + 1) + "/" + num);
         mPoseView.setValues(model);
     }
 
     @Override
     public void onPlayPoseTaskFinish() {
+        mActionStateText.setText("---");
         mPlayPoseTask = null;
     }
 

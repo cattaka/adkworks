@@ -11,13 +11,13 @@ import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.util.Log;
 
-public class PlayPoseTask extends AsyncTask<ActionModel, PoseModel, Void> {
+public class PlayPoseTask extends AsyncTask<ActionModel, Object, Void> {
     private IAppStub mAppStub;
 
     private PlayPoseTaskListener mListener;
 
     public interface PlayPoseTaskListener {
-        public void onPlayPoseTaskUpdate(PoseModel model);
+        public void onPlayPoseTaskUpdate(String name, PoseModel model, int pos, int num);
 
         public void onPlayPoseTaskFinish();
     }
@@ -34,12 +34,15 @@ public class PlayPoseTask extends AsyncTask<ActionModel, PoseModel, Void> {
             if (actionModel.getPoseModels() == null) {
                 continue;
             }
+            int idx = -1;
             for (PoseModel poseModel : actionModel.getPoseModels()) {
+                idx++;
                 if (isCancelled()) {
                     break outer;
                 }
                 byte[] data = poseModel.toPose();
-                publishProgress(poseModel);
+                publishProgress(actionModel.getName(), poseModel, idx, actionModel.getPoseModels()
+                        .size());
                 FrPacket packet = new FrPacket(OpCode.POSE, data.length, data);
                 mAppStub.getServiceWrapper().sendPacket(packet);
                 try {
@@ -57,10 +60,11 @@ public class PlayPoseTask extends AsyncTask<ActionModel, PoseModel, Void> {
     }
 
     @Override
-    protected void onProgressUpdate(PoseModel... values) {
+    protected void onProgressUpdate(Object... values) {
         super.onProgressUpdate(values);
         if (mListener != null) {
-            mListener.onPlayPoseTaskUpdate(values[0]);
+            mListener.onPlayPoseTaskUpdate((String)values[0], (PoseModel)values[1],
+                    (Integer)values[2], (Integer)values[3]);
         }
     }
 

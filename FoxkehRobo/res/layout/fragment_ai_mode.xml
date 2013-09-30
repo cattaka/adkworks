@@ -2,37 +2,46 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
-	<RelativeLayout
-	    android:id="@+id/operationPanel"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content" >
 
+    <RelativeLayout
+        android:id="@+id/operationPanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
 
-	    <TextView
-	        android:id="@+id/textView1"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_alignParentTop="true"
-	        android:text="AI Mode"
-	        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-	    <ToggleButton
-	        android:id="@+id/enableAiToggle"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_below="@+id/textView1"
-	        android:text="ToggleButton" />
-
-	    <net.cattaka.android.foxkehrobo.view.PoseView
-            android:id="@+id/poseView"
+        <TextView
+            android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:text="AI Mode"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <ToggleButton
+            android:id="@+id/enableAiToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/textView1"
+            android:text="ToggleButton" />
+
+        <net.cattaka.android.foxkehrobo.view.PoseView
+            android:id="@+id/poseView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-	        />
-	</RelativeLayout>
+            android:layout_alignParentLeft="true" />
+
+        <TextView
+            android:id="@+id/actionStateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_above="@+id/poseView"
+            android:layout_alignLeft="@+id/poseView"
+            android:layout_alignRight="@+id/poseView"
+            android:text="---" />
+    </RelativeLayout>
 
     <org.opencv.android.NativeCameraView
         android:id="@+id/cameraView"

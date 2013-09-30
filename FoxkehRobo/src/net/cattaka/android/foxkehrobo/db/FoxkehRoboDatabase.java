@@ -4,6 +4,7 @@ package net.cattaka.android.foxkehrobo.db;
 import java.util.List;
 
 import net.cattaka.android.foxkehrobo.Constants;
+import net.cattaka.android.foxkehrobo.data.ActionBind;
 import net.cattaka.android.foxkehrobo.entity.ActionModel;
 import net.cattaka.android.foxkehrobo.entity.MySocketAddress;
 import net.cattaka.android.foxkehrobo.entity.PoseModel;
@@ -17,7 +18,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class FoxkehRoboDatabase extends SQLiteOpenHelper {
 
     public FoxkehRoboDatabase(Context context) {
-        super(context, Constants.DB_NAME, null, 1);
+        super(context, Constants.DB_NAME, null, 2);
     }
 
     @Override
@@ -29,7 +30,11 @@ public class FoxkehRoboDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // none
+        if (oldVersion == 1) {
+            for (String sql : ActionModelHandler.SQL_ALTER_TABLE_1_TO_2) {
+                db.execSQL(sql);
+            }
+        }
     }
 
     public List<ActionModel> findActions(boolean withChild) {
@@ -171,5 +176,22 @@ public class FoxkehRoboDatabase extends SQLiteOpenHelper {
             db.close();
         }
         return result != 0;
+    }
+
+    public List<ActionModel> findBindedActions(ActionBind actionBind, boolean withChild) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            List<ActionModel> models = ActionModelHandler.findByActionBindOrderBySortAsc(db, 0,
+                    actionBind);
+            if (models != null && withChild) {
+                for (ActionModel model : models) {
+                    model.setPoseModels(PoseModelHandler.findByActionIdOrderBySortAsc(db, 0,
+                            model.getId()));
+                }
+            }
+            return models;
+        } finally {
+            db.close();
+        }
     }
 }

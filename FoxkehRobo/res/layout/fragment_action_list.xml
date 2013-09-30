@@ -30,7 +30,6 @@
         android:layout_toRightOf="@+id/poseView"
         android:divider="@android:color/black"
         android:dividerHeight="2dp" >
-
     </ListView>
 
     <net.cattaka.android.foxkehrobo.view.PoseView
@@ -40,5 +39,15 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true" >
     </net.cattaka.android.foxkehrobo.view.PoseView>
+
+    <TextView
+        android:id="@+id/actionStateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/poseView"
+        android:layout_alignLeft="@+id/poseView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/poseView"
+        android:text="---" />
 
 </RelativeLayout>

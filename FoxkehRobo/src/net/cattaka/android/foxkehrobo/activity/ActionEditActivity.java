@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.cattaka.android.foxkehrobo.R;
+import net.cattaka.android.foxkehrobo.data.ActionBind;
 import net.cattaka.android.foxkehrobo.db.FoxkehRoboDatabase;
 import net.cattaka.android.foxkehrobo.entity.ActionModel;
 import net.cattaka.android.foxkehrobo.entity.PoseModel;
@@ -15,8 +16,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager.LayoutParams;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 public class ActionEditActivity extends Activity implements View.OnClickListener {
@@ -27,6 +30,8 @@ public class ActionEditActivity extends Activity implements View.OnClickListener
     private ActionEditActivity me = this;
 
     private ListView mPoseListView;
+
+    private Spinner mActionBindSpinner;
 
     private ActionModel mActionModel;
 
@@ -99,12 +104,21 @@ public class ActionEditActivity extends Activity implements View.OnClickListener
         this.getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         setContentView(R.layout.action_edit);
         mPoseListView = (ListView)findViewById(R.id.poseList);
+        mActionBindSpinner = (Spinner)findViewById(R.id.actionBindSpinner);
 
         findViewById(R.id.addButton).setOnClickListener(this);
         findViewById(R.id.finishButton).setOnClickListener(this);
         mNameEdit = (EditText)findViewById(R.id.nameEdit);
 
         mActionModel = (ActionModel)getIntent().getSerializableExtra(EXTRA_ACTION_MODEL);
+
+        { // アダプターの設定
+            ArrayAdapter<ActionBind> adapter = new ArrayAdapter<ActionBind>(this,
+                    android.R.layout.simple_list_item_1, ActionBind.values());
+            mActionBindSpinner.setAdapter(adapter);
+            mActionBindSpinner.setSelection(mActionBindSpinner.getCount() - 1);
+            setSpinner(mActionBindSpinner, ActionBind.NONE);
+        }
     }
 
     @Override
@@ -117,6 +131,16 @@ public class ActionEditActivity extends Activity implements View.OnClickListener
         mPoseListView.setAdapter(mAdapter);
 
         mNameEdit.setText(mActionModel.getName());
+        setSpinner(mActionBindSpinner, mActionModel.getActionBind());
+    }
+
+    private void setSpinner(Spinner spinner, Object value) {
+        for (int i = 0; i < spinner.getCount(); i++) {
+            if (value == spinner.getItemAtPosition(i)) {
+                spinner.setSelection(i);
+                break;
+            }
+        }
     }
 
     @Override
@@ -132,6 +156,7 @@ public class ActionEditActivity extends Activity implements View.OnClickListener
             FoxkehRoboDatabase database = new FoxkehRoboDatabase(this);
 
             mActionModel.setName(String.valueOf(mNameEdit.getText()));
+            mActionModel.setActionBind((ActionBind)mActionBindSpinner.getSelectedItem());
 
             {
                 ActionModel am = (database.findActionModel(mActionModel.getName(), false));

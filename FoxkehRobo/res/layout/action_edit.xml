@@ -48,13 +48,32 @@
             android:layout_weight="1"
             android:singleLine="true"/>
     </LinearLayout>
+    <LinearLayout
+        android:id="@+id/actionBindLayout"
+        style="@style/SeekBlock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/nameLayout">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ActionBind" />
+
+        <Spinner
+            android:id="@+id/actionBindSpinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:singleLine="true"/>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/nameLayout"
+        android:layout_below="@+id/actionBindLayout"
         android:text="Poses"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
