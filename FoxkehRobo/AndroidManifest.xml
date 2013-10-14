@@ -18,7 +18,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".activity.AppActivity"
+            android:name=".activity.EntryActivity"
             android:label="@string/app_name"
             android:configChanges="screenSize|orientation"
             >
@@ -28,6 +28,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activity.AppActivity"></activity>
         <activity android:name=".activity.ActionEditActivity"></activity>
         <activity android:name=".activity.ActionListEditActivity"></activity>
         <activity android:name=".activity.PoseEditActivity"></activity>
