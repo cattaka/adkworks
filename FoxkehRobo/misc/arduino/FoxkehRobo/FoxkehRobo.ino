@@ -20,8 +20,8 @@ SoftwareSerial gDebug(RBT_RX, RBT_TX);
 #define SERVO_ARM_RIGHT  5
 #define SERVO_FOOT_LEFT  3
 #define SERVO_FOOT_RIGHT 6
-#define SERVO_HEAD_YAW   A3
-#define SERVO_HEAD_PITCH A4
+#define SERVO_HEAD_YAW   10
+#define SERVO_HEAD_PITCH 9
 #define SERVO_TAIL_YAW   A2
 #define SERVO_TAIL_PITCH A5
 #define SERVO_EAR_LEFT   12
