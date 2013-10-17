@@ -2,6 +2,9 @@
 package net.cattaka.android.foxkehrobo.core;
 
 import net.cattaka.android.foxkehrobo.entity.Vector3s;
+
+import org.opencv.core.Size;
+
 import android.content.SharedPreferences;
 
 public class MyPreference {
@@ -12,6 +15,8 @@ public class MyPreference {
     private static final String ACCESS_TOKEN_SECRET = "accessTokenSecret";
 
     private static final String TRACK_WORDS = "trakWords";
+
+    private static String KEY_PREVIEW_SIZE = "PreviewSize";
 
     private SharedPreferences pref;
 
@@ -67,5 +72,34 @@ public class MyPreference {
 
     public void putTrackWords(String accessTokenSecret) {
         editor.putString(TRACK_WORDS, accessTokenSecret);
+    }
+
+    public String getPreviewSize() {
+        return pref.getString(KEY_PREVIEW_SIZE, "800x600");
+    }
+
+    public void putPreviewSize(String previewSize) {
+        editor.putString(KEY_PREVIEW_SIZE, previewSize);
+    }
+
+    public Size getPreviewSizeAsSize() {
+        Size result = null;
+        String str = getPreviewSize();
+        if (str.indexOf('x') >= 0) {
+            String[] ts = str.split("x");
+            if (ts.length >= 2) {
+                try {
+                    double w = Double.parseDouble(ts[0]);
+                    double h = Double.parseDouble(ts[1]);
+                    result = new Size(w, h);
+                } catch (NumberFormatException e) {
+                    // ignore
+                }
+            }
+        }
+        if (result == null) {
+            result = new Size(800, 600);
+        }
+        return result;
     }
 }

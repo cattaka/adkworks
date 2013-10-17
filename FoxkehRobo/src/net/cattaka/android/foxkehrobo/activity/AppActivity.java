@@ -86,8 +86,8 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
         }
 
         private Fragment[] fragments = new Fragment[] {
-                new ConnectFragment(), new AiModeFragment(), new ActionListFragment(),
-                new ControllerFragment(),
+                new ConnectFragment(), new ActionListFragment(), new ControllerFragment(),
+                new AiModeFragment(),
         };
 
         @Override

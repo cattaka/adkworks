@@ -16,11 +16,11 @@ import net.cattaka.android.foxkehrobo.data.OpCode;
 import net.cattaka.android.foxkehrobo.entity.ActionModel;
 import net.cattaka.android.foxkehrobo.entity.PoseModel;
 import net.cattaka.android.foxkehrobo.opencv.DetectionBasedTracker;
+import net.cattaka.android.foxkehrobo.opencv.MyNativeCameraView;
 import net.cattaka.android.foxkehrobo.task.PlayPoseTask;
 import net.cattaka.android.foxkehrobo.view.PoseView;
 
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener;
-import org.opencv.android.NativeCameraView;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
@@ -99,7 +99,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
 
     private ToggleButton mEnableAiToggle;
 
-    private NativeCameraView mOpenCvCameraView;
+    private MyNativeCameraView mOpenCvCameraView;
 
     private MyPreference mPreference;
 
@@ -159,7 +159,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
 
         mBindedActions = new HashMap<ActionBind, List<ActionModel>>();
 
-        mOpenCvCameraView = (NativeCameraView)view.findViewById(R.id.cameraView);
+        mOpenCvCameraView = (MyNativeCameraView)view.findViewById(R.id.cameraView);
         mOpenCvCameraView.setCvCameraViewListener(mCvCameraViewListener);
         mOpenCvCameraView.setCameraIndex(0);
 
@@ -181,6 +181,9 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
                 mBindedActions.put(bind, models);
             }
         }
+
+        org.opencv.core.Size size = getMyPreference().getPreviewSizeAsSize();
+        mOpenCvCameraView.setPreviewSize(size);
     }
 
     @Override
@@ -198,6 +201,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
     @Override
     public void onPageSelected() {
         mEnableAiToggle.setChecked(false);
+
         mWakelock.acquire();
         mHandler.sendEmptyMessageDelayed(EVENT_GET_ACCEL, INTERVAL_GET_ACCEL);
         mHandler.sendEmptyMessageDelayed(EVENT_ACTION_RANDOM, INTERVAL_ACTION_RANDOM);
