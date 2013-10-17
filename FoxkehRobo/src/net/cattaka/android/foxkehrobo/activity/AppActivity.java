@@ -186,7 +186,9 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
             // load cascade file from application resources
             InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
             File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-            mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
+            // mCascadeFile = new File(cascadeDir,
+            // "haarcascade_frontalface_default.xml");
+            mCascadeFile = new File(cascadeDir, "haarcascade_frontalface_alt_tree.xml");
             FileOutputStream os = new FileOutputStream(mCascadeFile);
 
             byte[] buffer = new byte[4096];

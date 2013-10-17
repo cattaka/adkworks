@@ -2,7 +2,11 @@
 package net.cattaka.android.foxkehrobo.core;
 
 import net.cattaka.android.foxkehrobo.entity.Vector3s;
+import net.cattaka.libgeppa.data.DeviceInfo;
+import net.cattaka.libgeppa.data.DeviceInfo.DeviceType;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.opencv.core.Size;
 
 import android.content.SharedPreferences;
@@ -17,6 +21,8 @@ public class MyPreference {
     private static final String TRACK_WORDS = "trakWords";
 
     private static String KEY_PREVIEW_SIZE = "PreviewSize";
+
+    private static String KEY_DEVICE_INFO = "DeviceInfo";
 
     private SharedPreferences pref;
 
@@ -101,5 +107,53 @@ public class MyPreference {
             result = new Size(800, 600);
         }
         return result;
+    }
+
+    public DeviceInfo getDeviceInfo() {
+        String str = pref.getString(KEY_DEVICE_INFO, null);
+        if (str != null) {
+            try {
+                JSONObject jo = new JSONObject(str);
+                DeviceType deviceType = DeviceType.valueOf(jo.getString("deviceType"));
+                boolean supportCamera = jo.getBoolean("supportCamera");
+                String tcpHostName = jo.getString("tcpHostName");
+                int tcpPort = jo.getInt("tcpHostName");
+                String usbDeviceKey = jo.getString("tcpHostName");
+                switch (deviceType) {
+                    case DUMMY:
+                        return DeviceInfo.createDummy(supportCamera);
+                    case TCP:
+                        return DeviceInfo.createTcp(tcpHostName, tcpPort, supportCamera);
+                    case USB:
+                        return DeviceInfo.createUsb(usbDeviceKey, supportCamera);
+                }
+
+            } catch (JSONException e) {
+                // ignore
+            } catch (IllegalArgumentException e) {
+                // ignore
+            } catch (NullPointerException e) {
+                // ignore
+            }
+        }
+        return null;
+    }
+
+    public void setDeviceInfo(DeviceInfo deviceInfo) {
+        if (deviceInfo != null) {
+            JSONObject jo = new JSONObject();
+            try {
+                jo.put("deviceType", deviceInfo.getDeviceType());
+                jo.put("supportCamera", deviceInfo.isSupportCamera());
+                jo.put("tcpHostName", deviceInfo.getTcpHostName());
+                jo.put("tcpPort", deviceInfo.getTcpPort());
+                jo.put("usbDeviceKey", deviceInfo.getUsbDeviceKey());
+                editor.putString(KEY_DEVICE_INFO, jo.toString());
+            } catch (JSONException e) {
+                editor.putString(KEY_DEVICE_INFO, null);
+            }
+        } else {
+            editor.putString(KEY_DEVICE_INFO, null);
+        }
     }
 }
