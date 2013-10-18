@@ -11,29 +11,52 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
+        android:name=".core.MyApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
             android:name=".activity.EntryActivity"
-            android:label="@string/app_name"
             android:configChanges="screenSize|orientation"
-            >
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/usb_device_filter" />
         </activity>
-        <activity android:name=".activity.AppActivity"></activity>
-        <activity android:name=".activity.ActionEditActivity"></activity>
-        <activity android:name=".activity.ActionListEditActivity"></activity>
-        <activity android:name=".activity.PoseEditActivity"></activity>
-        <activity android:name=".activity.SelectDeviceActivity"></activity>
-        <service android:name="FoxkehRoboService"></service>
+
+        <receiver android:name=".core.BootReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:name=".activity.AppActivity" >
+        </activity>
+        <activity android:name=".activity.ActionEditActivity" >
+        </activity>
+        <activity android:name=".activity.ActionListEditActivity" >
+        </activity>
+        <activity android:name=".activity.PoseEditActivity" >
+        </activity>
+        <activity android:name=".activity.SelectDeviceActivity" >
+        </activity>
+
+        <service android:name="FoxkehRoboService" >
+        </service>
     </application>
 
 </manifest>

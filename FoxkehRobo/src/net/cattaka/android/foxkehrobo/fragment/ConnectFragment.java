@@ -6,6 +6,7 @@ import java.util.List;
 
 import net.cattaka.android.foxkehrobo.R;
 import net.cattaka.android.foxkehrobo.activity.SelectDeviceActivity;
+import net.cattaka.android.foxkehrobo.core.MyPreference;
 import net.cattaka.android.foxkehrobo.core.ServiceWrapper;
 import net.cattaka.libgeppa.data.DeviceEventCode;
 import net.cattaka.libgeppa.data.DeviceInfo;
@@ -24,11 +25,16 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.ToggleButton;
 
 public class ConnectFragment extends BaseFragment implements OnClickListener,
         OnItemSelectedListener {
 
     private Spinner mPreviewSizeView;
+
+    private ToggleButton mAiModeOnStartToggle;
+
+    private ToggleButton mStartupOnBootToggle;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,6 +63,12 @@ public class ConnectFragment extends BaseFragment implements OnClickListener,
             mPreviewSizeView.setOnItemSelectedListener(this);
             setSelection(mPreviewSizeView, getMyPreference().getPreviewSize());
         }
+
+        mAiModeOnStartToggle = (ToggleButton)view.findViewById(R.id.aiModeOnStartToggle);
+        mStartupOnBootToggle = (ToggleButton)view.findViewById(R.id.startupOnBootToggle);
+        mAiModeOnStartToggle.setOnClickListener(this);
+        mStartupOnBootToggle.setOnClickListener(this);
+
         return view;
     }
 
@@ -68,6 +80,10 @@ public class ConnectFragment extends BaseFragment implements OnClickListener,
         int v = (service != null && service.getCurrentDeviceInfo() != null) ? View.VISIBLE
                 : View.INVISIBLE;
         getView().findViewById(R.id.startButton).setVisibility(v);
+
+        MyPreference pref = getMyPreference();
+        mAiModeOnStartToggle.setChecked(pref.getAiModeOnStart());
+        mStartupOnBootToggle.setChecked(pref.getStartupOnBoot());
     }
 
     @Override
@@ -82,7 +98,16 @@ public class ConnectFragment extends BaseFragment implements OnClickListener,
         } else if (v.getId() == R.id.goToSelectDeviceButton) {
             Intent intent = new Intent(getContext(), SelectDeviceActivity.class);
             startActivity(intent);
+        } else if (v == mAiModeOnStartToggle) {
+            getMyPreference().edit();
+            getMyPreference().putAiModeOnStart(mAiModeOnStartToggle.isChecked());
+            getMyPreference().commit();
+        } else if (v == mStartupOnBootToggle) {
+            getMyPreference().edit();
+            getMyPreference().putStartupOnBoot(mStartupOnBootToggle.isChecked());
+            getMyPreference().commit();
         }
+
     }
 
     private void connectToService() {

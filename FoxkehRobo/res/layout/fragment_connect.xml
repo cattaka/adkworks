@@ -56,6 +56,43 @@
                 android:layout_height="wrap_content"
                 android:layout_span="2" />
         </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_span="2"
+                android:layout_weight="1"
+                android:text="Ai mode on Start"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <ToggleButton
+                android:id="@+id/aiModeOnStartToggle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_span="2"
+                android:layout_weight="1"
+                android:text="Startup on Boot"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <ToggleButton
+                android:id="@+id/startupOnBootToggle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </TableRow>
     </TableLayout>
+
 
 </LinearLayout>

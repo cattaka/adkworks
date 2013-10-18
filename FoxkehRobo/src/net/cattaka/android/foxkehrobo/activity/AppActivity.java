@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.cattaka.android.foxkehrobo.Constants;
 import net.cattaka.android.foxkehrobo.FoxkehRoboService;
@@ -34,6 +35,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -71,7 +74,18 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
             try {
                 mGeppaServiceListenerSeq = service.registerServiceListener(mServiceListener);
                 DeviceInfo deviceInfo = mServiceWrapper.getCurrentDeviceInfo();
-                mConnectionStateText.setText((deviceInfo != null) ? deviceInfo.getLabel() : "null");
+                if (deviceInfo != null) {
+                    mConnectionStateText.setText((deviceInfo != null) ? deviceInfo.getLabel()
+                            : "null");
+                } else if (getMyPreference().getStartupOnBoot()) {
+                    deviceInfo = getAvailableDeviceInfo();
+                    if (deviceInfo != null) {
+                        mConnectionStateText.setText("connecting");
+                        service.connect(deviceInfo);
+                    } else {
+                        mConnectionStateText.setText("null");
+                    }
+                }
             } catch (RemoteException e) {
                 // Impossible, ignore
                 Log.w(Constants.TAG, e.getMessage(), e);
@@ -126,9 +140,13 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
                     listener.onReceivePacket((FrPacket)objs[1]);
                 }
             } else if (msg.what == EVENT_ON_DEVICE_STATE_CHANGED) {
+                DeviceState deviceState = (DeviceState)objs[1];
+                DeviceEventCode deviceEventCode = (DeviceEventCode)objs[2];
+                DeviceInfo deviceInfo = (DeviceInfo)objs[3];
+                target.mConnectionStateText.setText((deviceInfo != null) ? deviceInfo.getLabel()
+                        : "null");
                 for (IDeviceAdapterListener<FrPacket> listener : target.mDeviceAdapterListeners) {
-                    listener.onDeviceStateChanged((DeviceState)objs[1], (DeviceEventCode)objs[2],
-                            (DeviceInfo)objs[3]);
+                    listener.onDeviceStateChanged(deviceState, deviceEventCode, (DeviceInfo)objs[3]);
                 }
             }
         };
@@ -138,15 +156,25 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
         private int lastPosition = -1;
 
         @Override
-        public void onPageSelected(int position) {
-            if (lastPosition != position) {
-                if (lastPosition >= 0) {
-                    getBaseFragment(lastPosition).onPageDeselected();
+        public void onPageSelected(final int position) {
+            BaseFragment fragment = getBaseFragment();
+            if (fragment.isResumed()) {
+                if (lastPosition != position) {
+                    if (lastPosition >= 0) {
+                        getBaseFragment(lastPosition).onPageDeselected();
+                    }
+                    if (position >= 0) {
+                        getBaseFragment(position).onPageSelected();
+                    }
+                    lastPosition = position;
                 }
-                if (position >= 0) {
-                    getBaseFragment(position).onPageSelected();
-                }
-                lastPosition = position;
+            } else if (mMyIsResumed) {
+                sHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        onPageSelected(position);
+                    }
+                }, 1);
             }
         }
 
@@ -229,6 +257,8 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
 
     private List<IDeviceAdapterListener<FrPacket>> mDeviceAdapterListeners;
 
+    private boolean mMyIsResumed = false;
+
     @Override
     protected void onCreate(Bundle arg0) {
         super.onCreate(arg0);
@@ -253,6 +283,7 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
     @Override
     protected void onResume() {
         super.onResume();
+        mMyIsResumed = true;
         loadCascade();
 
         { // opening DB
@@ -268,19 +299,29 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
         Intent service = new Intent(this, FoxkehRoboService.class);
         bindService(service, mServiceConnection, BIND_AUTO_CREATE);
 
-        mOnPageChangeListener.onPageSelected(mBodyPager.getCurrentItem());
-
         mMyPreference = new MyPreference(PreferenceManager.getDefaultSharedPreferences(this));
+
+        if (getMyPreference().getStartupOnBoot()) {
+            FragmentPagerAdapter adapter = (FragmentPagerAdapter)mBodyPager.getAdapter();
+            for (int i = 0; i < adapter.getCount(); i++) {
+                Fragment fragment = adapter.getItem(i);
+                if (fragment instanceof AiModeFragment) {
+                    mBodyPager.setCurrentItem(i);
+                    break;
+                }
+            }
+        }
+        mOnPageChangeListener.onPageSelected(mBodyPager.getCurrentItem());
     }
 
     @Override
     protected void onPause() {
+        mMyIsResumed = false;
         mOnPageChangeListener.onPageSelected(-1);
         super.onPause();
         { // closing DB
             mDbHelper.close();
             mDbHelper = null;
-            ;
         }
 
         if (mGeppaServiceListenerSeq != -1) {
@@ -358,5 +399,18 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
     @Override
     public DetectionBasedTracker getNativeDetector() {
         return mNativeDetector;
+    }
+
+    private DeviceInfo getAvailableDeviceInfo() {
+        int idVendor = getResources().getInteger(R.integer.idVendor);
+        int idProduct = getResources().getInteger(R.integer.idProduct);
+        UsbManager usbManager = (UsbManager)getSystemService(USB_SERVICE);
+        for (Map.Entry<String, UsbDevice> entry : usbManager.getDeviceList().entrySet()) {
+            UsbDevice device = entry.getValue();
+            if (device.getVendorId() == idVendor && device.getProductId() == idProduct) {
+                return DeviceInfo.createUsb(entry.getKey(), true);
+            }
+        }
+        return null;
     }
 }

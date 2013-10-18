@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="idVendor" type="integer" format="integer">1027</item>
+    <item name="idProduct" type="integer" format="integer">24577</item>
+
+</resources>

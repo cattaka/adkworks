@@ -200,7 +200,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
 
     @Override
     public void onPageSelected() {
-        mEnableAiToggle.setChecked(false);
+        mEnableAiToggle.setChecked(getMyPreference().getAiModeOnStart());
 
         mWakelock.acquire();
         mHandler.sendEmptyMessageDelayed(EVENT_GET_ACCEL, INTERVAL_GET_ACCEL);
