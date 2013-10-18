@@ -6,6 +6,7 @@ import java.util.List;
 import org.opencv.android.NativeCameraView;
 import org.opencv.core.Size;
 import org.opencv.highgui.Highgui;
+import org.opencv.highgui.VideoCapture;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -30,8 +31,6 @@ public class MyNativeCameraView extends NativeCameraView {
         if (super.connectCamera(width, height)) {
             mCamera.set(Highgui.CV_CAP_PROP_ANDROID_ANTIBANDING,
                     Highgui.CV_CAP_ANDROID_ANTIBANDING_AUTO);
-            mCamera.set(Highgui.CV_CAP_PROP_ANDROID_WHITE_BALANCE,
-                    Highgui.CV_CAP_ANDROID_WHITE_BALANCE_AUTO);
             return true;
         } else {
             return false;
@@ -47,5 +46,9 @@ public class MyNativeCameraView extends NativeCameraView {
             return super.calculateCameraFrameSize(supportedSizes, accessor, surfaceWidth,
                     surfaceHeight);
         }
+    }
+
+    public VideoCapture getVideoCapture() {
+        return mCamera;
     }
 }

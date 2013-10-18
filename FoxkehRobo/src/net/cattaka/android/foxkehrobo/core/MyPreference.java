@@ -2,6 +2,7 @@
 package net.cattaka.android.foxkehrobo.core;
 
 import net.cattaka.android.foxkehrobo.entity.Vector3s;
+import net.cattaka.android.foxkehrobo.opencv.WhiteBalance;
 
 import org.opencv.core.Size;
 
@@ -17,6 +18,8 @@ public class MyPreference {
     private static final String TRACK_WORDS = "trakWords";
 
     private static String KEY_PREVIEW_SIZE = "PreviewSize";
+
+    private static String KEY_WHITE_BALANCE = "WhiteBalance";
 
     private static String KEY_AI_MODE_ON_START = "AiModeOnStart";
 
@@ -105,6 +108,23 @@ public class MyPreference {
             result = new Size(800, 600);
         }
         return result;
+    }
+
+    public WhiteBalance getWhiteBalance() {
+        String name = pref.getString(KEY_WHITE_BALANCE, WhiteBalance.AUTO.name());
+        try {
+            return WhiteBalance.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            return WhiteBalance.AUTO;
+        }
+    }
+
+    public void putWhiteBalance(WhiteBalance whiteBalance) {
+        if (whiteBalance != null) {
+            editor.putString(KEY_WHITE_BALANCE, whiteBalance.name());
+        } else {
+            editor.putString(KEY_WHITE_BALANCE, null);
+        }
     }
 
     public boolean getAiModeOnStart() {

@@ -9,6 +9,7 @@ import net.cattaka.android.foxkehrobo.activity.ManageActionDbActivity;
 import net.cattaka.android.foxkehrobo.activity.SelectDeviceActivity;
 import net.cattaka.android.foxkehrobo.core.MyPreference;
 import net.cattaka.android.foxkehrobo.core.ServiceWrapper;
+import net.cattaka.android.foxkehrobo.opencv.WhiteBalance;
 import net.cattaka.libgeppa.data.DeviceEventCode;
 import net.cattaka.libgeppa.data.DeviceInfo;
 import net.cattaka.libgeppa.data.DeviceState;
@@ -32,6 +33,8 @@ public class ConnectFragment extends BaseFragment implements OnClickListener,
         OnItemSelectedListener {
 
     private Spinner mPreviewSizeView;
+
+    private Spinner mWhiteBalanceView;
 
     private ToggleButton mAiModeOnStartToggle;
 
@@ -64,6 +67,15 @@ public class ConnectFragment extends BaseFragment implements OnClickListener,
             mPreviewSizeView.setAdapter(adapter);
             mPreviewSizeView.setOnItemSelectedListener(this);
             setSelection(mPreviewSizeView, getMyPreference().getPreviewSize());
+        }
+
+        mWhiteBalanceView = (Spinner)view.findViewById(R.id.whiteBalanceSpinner);
+        {
+            ArrayAdapter<WhiteBalance> adapter = new ArrayAdapter<WhiteBalance>(getContext(),
+                    android.R.layout.simple_list_item_1, WhiteBalance.values());
+            mWhiteBalanceView.setAdapter(adapter);
+            mWhiteBalanceView.setOnItemSelectedListener(this);
+            setSelection(mWhiteBalanceView, getMyPreference().getWhiteBalance());
         }
 
         mAiModeOnStartToggle = (ToggleButton)view.findViewById(R.id.aiModeOnStartToggle);
@@ -146,6 +158,11 @@ public class ConnectFragment extends BaseFragment implements OnClickListener,
             String item = (String)parent.getItemAtPosition(position);
             getMyPreference().edit();
             getMyPreference().putPreviewSize(item);
+            getMyPreference().commit();
+        } else if (parent.getId() == R.id.whiteBalanceSpinner) {
+            WhiteBalance item = (WhiteBalance)parent.getItemAtPosition(position);
+            getMyPreference().edit();
+            getMyPreference().putWhiteBalance(item);
             getMyPreference().commit();
         }
 

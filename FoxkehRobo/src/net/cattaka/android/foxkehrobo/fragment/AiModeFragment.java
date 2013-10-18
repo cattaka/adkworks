@@ -26,9 +26,12 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
 
 import android.content.Context;
+import android.hardware.Camera;
+import android.hardware.Camera.Parameters;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -200,12 +203,27 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
 
     @Override
     public void onPageSelected() {
-        mEnableAiToggle.setChecked(getMyPreference().getAiModeOnStart());
+        MyPreference pref = getMyPreference();
+        mEnableAiToggle.setChecked(pref.getAiModeOnStart());
 
         mWakelock.acquire();
         mHandler.sendEmptyMessageDelayed(EVENT_GET_ACCEL, INTERVAL_GET_ACCEL);
         mHandler.sendEmptyMessageDelayed(EVENT_ACTION_RANDOM, INTERVAL_ACTION_RANDOM);
-        mOpenCvCameraView.enableView();
+
+        {
+            Camera camera = Camera.open(0);
+            Parameters params = camera.getParameters();
+            params.setWhiteBalance(Parameters.WHITE_BALANCE_CLOUDY_DAYLIGHT);
+            params.setAutoWhiteBalanceLock(true);
+            params.setAutoExposureLock(true);
+            params.setExposureCompensation(0);
+            camera.setParameters(params);
+            camera.release();
+
+            mOpenCvCameraView.enableView();
+            mOpenCvCameraView.getVideoCapture().set(Highgui.CV_CAP_PROP_ANDROID_WHITE_BALANCE,
+                    pref.getWhiteBalance().value);
+        }
     }
 
     @Override
