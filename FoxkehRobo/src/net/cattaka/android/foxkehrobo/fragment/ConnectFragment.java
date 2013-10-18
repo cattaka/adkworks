@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.cattaka.android.foxkehrobo.R;
+import net.cattaka.android.foxkehrobo.activity.ManageActionDbActivity;
 import net.cattaka.android.foxkehrobo.activity.SelectDeviceActivity;
 import net.cattaka.android.foxkehrobo.core.MyPreference;
 import net.cattaka.android.foxkehrobo.core.ServiceWrapper;
@@ -43,6 +44,7 @@ public class ConnectFragment extends BaseFragment implements OnClickListener,
         // Binds event listener
         view.findViewById(R.id.startButton).setOnClickListener(this);
         view.findViewById(R.id.goToSelectDeviceButton).setOnClickListener(this);
+        view.findViewById(R.id.manageActionDb).setOnClickListener(this);
 
         mPreviewSizeView = (Spinner)view.findViewById(R.id.previewSizeSpinner);
         {
@@ -106,6 +108,9 @@ public class ConnectFragment extends BaseFragment implements OnClickListener,
             getMyPreference().edit();
             getMyPreference().putStartupOnBoot(mStartupOnBootToggle.isChecked());
             getMyPreference().commit();
+        } else if (v.getId() == R.id.manageActionDb) {
+            Intent intent = new Intent(getContext(), ManageActionDbActivity.class);
+            startActivity(intent);
         }
 
     }

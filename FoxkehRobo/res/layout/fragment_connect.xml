@@ -92,7 +92,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </TableRow>
-    </TableLayout>
 
+        <Button
+            android:id="@+id/manageActionDb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Manage Action DB"
+            />
+            />
+    </TableLayout>
 
 </LinearLayout>
