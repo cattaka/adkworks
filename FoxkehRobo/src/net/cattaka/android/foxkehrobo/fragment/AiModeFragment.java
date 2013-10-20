@@ -27,17 +27,17 @@ import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.highgui.Highgui;
+import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
 
 import android.content.Context;
-import android.hardware.Camera;
-import android.hardware.Camera.Parameters;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -123,7 +123,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
 
     private Mat mGray;
 
-    private float mRelativeFaceSize = 0.2f;
+    private float mRelativeFaceSize = 0.15f;
 
     private int mAbsoluteFaceSize = 0;
 
@@ -211,18 +211,11 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
         mHandler.sendEmptyMessageDelayed(EVENT_ACTION_RANDOM, INTERVAL_ACTION_RANDOM);
 
         {
-            Camera camera = Camera.open(0);
-            Parameters params = camera.getParameters();
-            params.setWhiteBalance(Parameters.WHITE_BALANCE_CLOUDY_DAYLIGHT);
-            params.setAutoWhiteBalanceLock(true);
-            params.setAutoExposureLock(true);
-            params.setExposureCompensation(0);
-            camera.setParameters(params);
-            camera.release();
-
             mOpenCvCameraView.enableView();
-            mOpenCvCameraView.getVideoCapture().set(Highgui.CV_CAP_PROP_ANDROID_WHITE_BALANCE,
-                    pref.getWhiteBalance().value);
+            VideoCapture capture = mOpenCvCameraView.getVideoCapture();
+            capture.set(Highgui.CV_CAP_PROP_ANDROID_WHITE_BALANCE, pref.getWhiteBalance().value);
+            capture.set(Highgui.CV_CAP_PROP_ANDROID_FOCUS_MODE,
+                    Highgui.CV_CAP_ANDROID_FOCUS_MODE_AUTO);
         }
     }
 
@@ -296,23 +289,29 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
         }
 
         int width = inputFrame.width();
+        int height = inputFrame.height();
         long currTime = SystemClock.elapsedRealtime();
         Rect[] facesArray = faces.toArray();
+        int[] indexMap = new int[mDetectedFaceTime.length];
         boolean[] detectedIndexs = new boolean[mDetectedFaceTime.length];
         boolean[] fixedIndexs = new boolean[mDetectedFaceTime.length];
+        int detectedCount = 0;
         for (int i = 0; i < facesArray.length; i++) {
             int center = facesArray[i].x + facesArray[i].width / 2;
             int index = center * 10 / width;
-            if (width / facesArray[i].width >= 8) {
-                // 画像に対して8分の１より小さい場合は無視
-                continue;
-            }
+            indexMap[index] = i;
+            // if ((float)facesArray[i].width / (float)width <
+            // (mRelativeFaceSize/2)) {
+            // // 画像に対して一定以上小さい場合は無視
+            // continue;
+            // }
             if (0 <= index && index < detectedIndexs.length) {
                 detectedIndexs[index] = true;
-                if (mDetectedFaceTime[index] > 0 && currTime - mDetectedFaceTime[index] >= 1000) {
+                if (mDetectedFaceTime[index] > 0 && currTime - mDetectedFaceTime[index] >= 500) {
                     Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR,
                             3);
                     fixedIndexs[index] = true;
+                    detectedCount++;
                 } else {
                     Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(),
                             FACE_RECT_COLOR_T, 3);
@@ -327,17 +326,36 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
                 mDetectedFaceTime[i] = 0;
             }
         }
-        for (int i = 0; i < detectedIndexs.length; i++) {
-            if (detectedIndexs[i]) {
-                onFaceDetected(i, detectedIndexs.length);
-                break;
+        if (detectedCount > 1 && onMultiFaceDetected(detectedCount)) {
+            // ok
+        } else {
+            for (int i = 0; i < detectedIndexs.length; i++) {
+                if (detectedIndexs[i]) {
+                    onFaceDetected(facesArray[indexMap[i]], width, height);
+                    break;
+                }
             }
         }
 
         return mRgba;
     }
 
-    public void onFaceDetected(int index, int length) {
+    public boolean onMultiFaceDetected(int detectedCount) {
+        Log.d(Constants.TAG, "Multi detect:" + detectedCount);
+        ActionModel actionModel;
+        actionModel = pickBindedActionRandom(ActionBind.PANIC);
+        if (actionModel != null) {
+            mPlayPoseTask = new PlayPoseTask(getAppStub(), this);
+            mPlayPoseTask.execute(actionModel);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void onFaceDetected(Rect rect, int width, int height) {
+        float pos = (float)(rect.x + rect.width / 2) / (float)width;
+
         if (!isEnableAi()) {
             return;
         }
@@ -346,7 +364,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
         }
         ActionModel actionModel;
         { // 左手か右手かどっちの手を振るか選ぶ
-            if (index < length / 2) {
+            if (pos < 0.5) {
                 actionModel = pickBindedActionRandom(ActionBind.WAVE_LEFT);
             } else {
                 actionModel = pickBindedActionRandom(ActionBind.WAVE_RIGHT);
@@ -363,7 +381,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
         }
         { // 頭の方向を変える。ついでに耳をちょっと動かす
             PoseModel headPoseModel = new PoseModel();
-            headPoseModel.setHeadYaw((byte)(0x30 + (0xA0 * index / length)));
+            headPoseModel.setHeadYaw((byte)(0x30 + (int)(0xA0 * pos)));
             headPoseModel.setTime(200);
             {
                 PoseModel pm = new PoseModel(headPoseModel);

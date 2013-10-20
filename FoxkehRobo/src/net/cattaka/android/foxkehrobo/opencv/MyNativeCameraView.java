@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.opencv.android.NativeCameraView;
 import org.opencv.core.Size;
-import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 
 import android.content.Context;
@@ -29,8 +28,6 @@ public class MyNativeCameraView extends NativeCameraView {
     @Override
     protected boolean connectCamera(int width, int height) {
         if (super.connectCamera(width, height)) {
-            mCamera.set(Highgui.CV_CAP_PROP_ANDROID_ANTIBANDING,
-                    Highgui.CV_CAP_ANDROID_ANTIBANDING_AUTO);
             return true;
         } else {
             return false;
