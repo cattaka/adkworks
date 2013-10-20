@@ -54,11 +54,12 @@ public class ConnectFragment extends BaseFragment implements OnClickListener,
             List<String> sizeStrs = new ArrayList<String>();
             {
                 VideoCapture mCapture = new VideoCapture();
-                mCapture.open(0);
-                List<Size> sizes = mCapture.getSupportedPreviewSizes();
-                mCapture.release();
-                for (Size size : sizes) {
-                    sizeStrs.add((int)size.width + "x" + (int)size.height);
+                if (mCapture.open(0)) {
+                    List<Size> sizes = mCapture.getSupportedPreviewSizes();
+                    mCapture.release();
+                    for (Size size : sizes) {
+                        sizeStrs.add((int)size.width + "x" + (int)size.height);
+                    }
                 }
             }
 
