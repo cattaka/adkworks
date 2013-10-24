@@ -94,6 +94,8 @@ void setup()
 void loop()
 {
   // データ受信
+  //if (Serial.available() > 0) {
+  // for (int i=0;i<2 && Serial.available() > 0;i++) {
   while(Serial.available() > 0) {
     unsigned char c = Serial.read();
 #ifdef DUMP_RAW
@@ -139,7 +141,7 @@ void loop()
     }
     SoftwareServo::refresh();
   }
-  delay(10);
+  delay(5);
 }
 
 void handleRecvPacket(unsigned char packetType, unsigned char opCode, int dataLen, unsigned char* data) {
@@ -182,11 +184,13 @@ void handleRecvPacket(unsigned char packetType, unsigned char opCode, int dataLe
       } else {
         for (int i=0;i<SERVO_NUM;i++) {
           myServos[i].value = data[i];
+#ifdef DUMP_PACKET
           gDebug.print("Servo idx=");
           gDebug.print(i, DEC);
           gDebug.print(", value=");
           gDebug.print(myServos[i].value, HEX);
           gDebug.print("\n");
+#endif
         }
       }
 //    } else if (opCode == 2) {
@@ -204,11 +208,13 @@ void handleRecvPacket(unsigned char packetType, unsigned char opCode, int dataLe
         for (int i=0;i<SERVO_NUM;i++) {
           if (flags & (1<<i)) {
             myServos[i].value = data[i+2];
+#ifdef DUMP_PACKET
             gDebug.print("Servo idx=");
             gDebug.print(i, DEC);
             gDebug.print(", value=");
             gDebug.print(myServos[i].value, HEX);
             gDebug.print("\n");
+#endif
           }
         }
 //        if (flags & (1<<SERVO_NUM)) {
