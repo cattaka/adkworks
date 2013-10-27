@@ -1,6 +1,7 @@
 
 package net.cattaka.android.foxkehrobo.core;
 
+import net.cattaka.android.foxkehrobo.data.FaceDetectionAlgorism;
 import net.cattaka.android.foxkehrobo.data.FrPacket;
 import net.cattaka.android.foxkehrobo.db.FoxkehRoboDatabase;
 import net.cattaka.android.foxkehrobo.opencv.DetectionBasedTracker;
@@ -23,4 +24,6 @@ public interface IAppStub {
     public void setKeepScreen(boolean flag);
 
     public DetectionBasedTracker getNativeDetector();
+
+    public void loadCascade(FaceDetectionAlgorism algorism);
 }

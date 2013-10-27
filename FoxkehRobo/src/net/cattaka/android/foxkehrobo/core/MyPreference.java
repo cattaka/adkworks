@@ -1,6 +1,7 @@
 
 package net.cattaka.android.foxkehrobo.core;
 
+import net.cattaka.android.foxkehrobo.data.FaceDetectionAlgorism;
 import net.cattaka.android.foxkehrobo.entity.Vector3s;
 import net.cattaka.android.foxkehrobo.opencv.WhiteBalance;
 
@@ -24,6 +25,8 @@ public class MyPreference {
     private static String KEY_AI_MODE_ON_START = "AiModeOnStart";
 
     private static String KEY_STARTUP_ON_BOOT = "StartupOnBoot";
+
+    private static String KEY_FACE_DETECTION_ALGORISM = "FaceDetectionAlgorism";
 
     private SharedPreferences pref;
 
@@ -141,5 +144,23 @@ public class MyPreference {
 
     public void putStartupOnBoot(boolean flag) {
         editor.putBoolean(KEY_STARTUP_ON_BOOT, flag);
+    }
+
+    public FaceDetectionAlgorism getFaceDetectionAlgorism() {
+        String name = pref.getString(KEY_FACE_DETECTION_ALGORISM,
+                FaceDetectionAlgorism.HAARCASCADE_FRONTALFACE_ALT.name());
+        try {
+            return FaceDetectionAlgorism.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            return FaceDetectionAlgorism.HAARCASCADE_FRONTALFACE_ALT;
+        }
+    }
+
+    public void putFaceDetectionAlgorism(FaceDetectionAlgorism FaceDetectionAlgorism) {
+        if (FaceDetectionAlgorism != null) {
+            editor.putString(KEY_FACE_DETECTION_ALGORISM, FaceDetectionAlgorism.name());
+        } else {
+            editor.putString(KEY_FACE_DETECTION_ALGORISM, null);
+        }
     }
 }

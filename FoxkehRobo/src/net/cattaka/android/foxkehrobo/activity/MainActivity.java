@@ -9,6 +9,7 @@ import net.cattaka.android.foxkehrobo.R;
 import net.cattaka.android.foxkehrobo.core.IAppStub;
 import net.cattaka.android.foxkehrobo.core.MyPreference;
 import net.cattaka.android.foxkehrobo.core.ServiceWrapper;
+import net.cattaka.android.foxkehrobo.data.FaceDetectionAlgorism;
 import net.cattaka.android.foxkehrobo.data.FrPacket;
 import net.cattaka.android.foxkehrobo.db.FoxkehRoboDatabase;
 import net.cattaka.android.foxkehrobo.fragment.ConnectFragment;
@@ -215,5 +216,10 @@ public class MainActivity extends FragmentActivity implements IAppStub {
     @Override
     public DetectionBasedTracker getNativeDetector() {
         return null;
+    }
+
+    @Override
+    public void loadCascade(FaceDetectionAlgorism algorism) {
+
     }
 }

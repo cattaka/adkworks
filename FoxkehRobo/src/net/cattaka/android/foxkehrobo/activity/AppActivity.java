@@ -15,6 +15,7 @@ import net.cattaka.android.foxkehrobo.R;
 import net.cattaka.android.foxkehrobo.core.IAppStub;
 import net.cattaka.android.foxkehrobo.core.MyPreference;
 import net.cattaka.android.foxkehrobo.core.ServiceWrapper;
+import net.cattaka.android.foxkehrobo.data.FaceDetectionAlgorism;
 import net.cattaka.android.foxkehrobo.data.FrPacket;
 import net.cattaka.android.foxkehrobo.db.FoxkehRoboDatabase;
 import net.cattaka.android.foxkehrobo.fragment.ActionListFragment;
@@ -209,12 +210,13 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
     // }
     // };
 
-    private void loadCascade() {
+    @Override
+    public void loadCascade(FaceDetectionAlgorism algorism) {
         try {
             // load cascade file from application resources
             InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
             File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-            mCascadeFile = new File(cascadeDir, "haarcascade_frontalface_default.xml");
+            mCascadeFile = new File(cascadeDir, algorism.filename);
             // mCascadeFile = new File(cascadeDir,
             // "haarcascade_frontalface_alt_tree.xml");
             FileOutputStream os = new FileOutputStream(mCascadeFile);
@@ -284,7 +286,9 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
     protected void onResume() {
         super.onResume();
         mMyIsResumed = true;
-        loadCascade();
+        mMyPreference = new MyPreference(PreferenceManager.getDefaultSharedPreferences(this));
+
+        loadCascade(mMyPreference.getFaceDetectionAlgorism());
 
         { // opening DB
             if (mDbHelper != null) {
@@ -298,8 +302,6 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
 
         Intent service = new Intent(this, FoxkehRoboService.class);
         bindService(service, mServiceConnection, BIND_AUTO_CREATE);
-
-        mMyPreference = new MyPreference(PreferenceManager.getDefaultSharedPreferences(this));
 
         if (getMyPreference().getAiModeOnStart()) {
             FragmentPagerAdapter adapter = (FragmentPagerAdapter)mBodyPager.getAdapter();

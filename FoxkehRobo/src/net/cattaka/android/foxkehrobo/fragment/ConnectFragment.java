@@ -9,6 +9,7 @@ import net.cattaka.android.foxkehrobo.activity.ManageActionDbActivity;
 import net.cattaka.android.foxkehrobo.activity.SelectDeviceActivity;
 import net.cattaka.android.foxkehrobo.core.MyPreference;
 import net.cattaka.android.foxkehrobo.core.ServiceWrapper;
+import net.cattaka.android.foxkehrobo.data.FaceDetectionAlgorism;
 import net.cattaka.android.foxkehrobo.opencv.WhiteBalance;
 import net.cattaka.libgeppa.data.DeviceEventCode;
 import net.cattaka.libgeppa.data.DeviceInfo;
@@ -35,6 +36,8 @@ public class ConnectFragment extends BaseFragment implements OnClickListener,
     private Spinner mPreviewSizeView;
 
     private Spinner mWhiteBalanceView;
+
+    private Spinner mFaceDetectionAlgorismView;
 
     private ToggleButton mAiModeOnStartToggle;
 
@@ -77,6 +80,16 @@ public class ConnectFragment extends BaseFragment implements OnClickListener,
             mWhiteBalanceView.setAdapter(adapter);
             mWhiteBalanceView.setOnItemSelectedListener(this);
             setSelection(mWhiteBalanceView, getMyPreference().getWhiteBalance());
+        }
+
+        mFaceDetectionAlgorismView = (Spinner)view.findViewById(R.id.facedetectionAlgorismSpinner);
+        {
+            ArrayAdapter<FaceDetectionAlgorism> adapter = new ArrayAdapter<FaceDetectionAlgorism>(
+                    getContext(), android.R.layout.simple_list_item_1,
+                    FaceDetectionAlgorism.values());
+            mFaceDetectionAlgorismView.setAdapter(adapter);
+            mFaceDetectionAlgorismView.setOnItemSelectedListener(this);
+            setSelection(mFaceDetectionAlgorismView, getMyPreference().getFaceDetectionAlgorism());
         }
 
         mAiModeOnStartToggle = (ToggleButton)view.findViewById(R.id.aiModeOnStartToggle);
@@ -165,6 +178,12 @@ public class ConnectFragment extends BaseFragment implements OnClickListener,
             getMyPreference().edit();
             getMyPreference().putWhiteBalance(item);
             getMyPreference().commit();
+        } else if (parent.getId() == R.id.facedetectionAlgorismSpinner) {
+            FaceDetectionAlgorism item = (FaceDetectionAlgorism)parent.getItemAtPosition(position);
+            getMyPreference().edit();
+            getMyPreference().putFaceDetectionAlgorism(item);
+            getMyPreference().commit();
+            getAppStub().loadCascade(item);
         }
 
     }
