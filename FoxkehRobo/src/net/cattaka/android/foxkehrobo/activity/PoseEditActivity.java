@@ -1,9 +1,12 @@
 
 package net.cattaka.android.foxkehrobo.activity;
 
+import java.util.Map;
+
 import net.cattaka.android.foxkehrobo.Constants;
 import net.cattaka.android.foxkehrobo.FoxkehRoboService;
 import net.cattaka.android.foxkehrobo.R;
+import net.cattaka.android.foxkehrobo.core.MyPreference;
 import net.cattaka.android.foxkehrobo.core.ServiceWrapper;
 import net.cattaka.android.foxkehrobo.entity.PoseModel;
 import net.cattaka.android.foxkehrobo.fragment.PoseEditFragment;
@@ -18,10 +21,13 @@ import net.cattaka.libgeppa.data.PacketWrapper;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
@@ -70,8 +76,20 @@ public class PoseEditActivity extends FragmentActivity implements View.OnClickLi
             mServiceWrapper.sendPose(mPoseModel);
 
             try {
-                mGeppaServiceListenerSeq = service.registerServiceListener(mGeppaServiceListener);
-                mConnectionStateText.setText(String.valueOf(service.getCurrentDeviceInfo()));
+                mGeppaServiceListenerSeq = service.registerServiceListener(mServiceListener);
+                DeviceInfo deviceInfo = mServiceWrapper.getCurrentDeviceInfo();
+                if (deviceInfo != null) {
+                    mConnectionStateText.setText((deviceInfo != null) ? deviceInfo.getLabel()
+                            : "null");
+                } else if (getMyPreference().getStartupOnBoot()) {
+                    deviceInfo = getAvailableDeviceInfo();
+                    if (deviceInfo != null) {
+                        mConnectionStateText.setText("connecting");
+                        service.connect(deviceInfo);
+                    } else {
+                        mConnectionStateText.setText("null");
+                    }
+                }
             } catch (RemoteException e) {
                 // Impossible, ignore
                 Log.w(Constants.TAG, e.getMessage(), e);
@@ -83,7 +101,9 @@ public class PoseEditActivity extends FragmentActivity implements View.OnClickLi
 
     private PoseModel mPoseModel;
 
-    private IActiveGeppaServiceListener.Stub mGeppaServiceListener = new IActiveGeppaServiceListener.Stub() {
+    private MyPreference mMyPreference;
+
+    private IActiveGeppaServiceListener.Stub mServiceListener = new IActiveGeppaServiceListener.Stub() {
         public void onDeviceStateChanged(DeviceState deviceState, DeviceEventCode deviceEventCode,
                 DeviceInfo deviceInfo) throws RemoteException {
             mConnectionStateText.setText(String.valueOf(deviceState));
@@ -149,6 +169,8 @@ public class PoseEditActivity extends FragmentActivity implements View.OnClickLi
     protected void onResume() {
         super.onResume();
 
+        mMyPreference = new MyPreference(PreferenceManager.getDefaultSharedPreferences(this));
+
         Intent service = new Intent(this, FoxkehRoboService.class);
         bindService(service, mServiceConnection, BIND_AUTO_CREATE);
     }
@@ -194,5 +216,22 @@ public class PoseEditActivity extends FragmentActivity implements View.OnClickLi
 
         mPoseEditFragment.savePoseModel(mPoseModel);
         mServiceWrapper.sendPose(mPoseModel);
+    }
+
+    public MyPreference getMyPreference() {
+        return mMyPreference;
+    }
+
+    private DeviceInfo getAvailableDeviceInfo() {
+        int idVendor = getResources().getInteger(R.integer.idVendor);
+        int idProduct = getResources().getInteger(R.integer.idProduct);
+        UsbManager usbManager = (UsbManager)getSystemService(USB_SERVICE);
+        for (Map.Entry<String, UsbDevice> entry : usbManager.getDeviceList().entrySet()) {
+            UsbDevice device = entry.getValue();
+            if (device.getVendorId() == idVendor && device.getProductId() == idProduct) {
+                return DeviceInfo.createUsb(entry.getKey(), true);
+            }
+        }
+        return null;
     }
 }

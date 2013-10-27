@@ -73,10 +73,12 @@ void setup()
 //  pinMode(LED_EYE_RIGHT, OUTPUT);
 
   {
+    int rightArmOffset = -100;
+    int footOffset = 100;
     initMyServo(0, SERVO_ARM_LEFT,   500, 2400, 0x7F, 0xFF);
-    initMyServo(1, SERVO_ARM_RIGHT,  500, 2400, 0x7F, 0xFF);
-    initMyServo(2, SERVO_FOOT_LEFT,  900, 2000, 0x7F, 0xFF);
-    initMyServo(3, SERVO_FOOT_RIGHT, 900, 2000, 0x7F, 0xFF);
+    initMyServo(1, SERVO_ARM_RIGHT,  500+rightArmOffset, 2400+rightArmOffset, 0x7F, 0xFF);
+    initMyServo(2, SERVO_FOOT_LEFT,  1000+footOffset, 1900+footOffset, 0x7F, 0xFF);
+    initMyServo(3, SERVO_FOOT_RIGHT, 1000-footOffset, 1900-footOffset, 0x7F, 0xFF);
     initMyServo(4, SERVO_HEAD_YAW,   500, 2400, 0x7F, 0xFF);
     initMyServo(5, SERVO_HEAD_PITCH, 500, 2400, 0x7F, 0xFF);
     initMyServo(6, SERVO_TAIL_YAW,   500, 2400, 0x7F, 0xFF);

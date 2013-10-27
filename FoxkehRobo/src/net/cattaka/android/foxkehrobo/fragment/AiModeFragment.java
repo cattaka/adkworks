@@ -35,7 +35,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -130,6 +129,10 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
     private long[] mDetectedFaceTime = new long[10];
 
     private WakeLock mWakelock;
+
+    private int mLastHeadYaw = 0x7F;
+
+    private int mLastHeadPitch = 0x7F;
 
     private CvCameraViewListener mCvCameraViewListener = new CvCameraViewListener() {
 
@@ -288,52 +291,31 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
             nativeDetector.detect(mGray, faces);
         }
 
-        int width = inputFrame.width();
-        int height = inputFrame.height();
-        long currTime = SystemClock.elapsedRealtime();
-        Rect[] facesArray = faces.toArray();
-        int[] indexMap = new int[mDetectedFaceTime.length];
-        boolean[] detectedIndexs = new boolean[mDetectedFaceTime.length];
-        boolean[] fixedIndexs = new boolean[mDetectedFaceTime.length];
-        int detectedCount = 0;
-        for (int i = 0; i < facesArray.length; i++) {
-            int center = facesArray[i].x + facesArray[i].width / 2;
-            int index = center * 10 / width;
-            indexMap[index] = i;
-            // if ((float)facesArray[i].width / (float)width <
-            // (mRelativeFaceSize/2)) {
-            // // 画像に対して一定以上小さい場合は無視
-            // continue;
-            // }
-            if (0 <= index && index < detectedIndexs.length) {
-                detectedIndexs[index] = true;
-                if (mDetectedFaceTime[index] > 0 && currTime - mDetectedFaceTime[index] >= 500) {
-                    Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR,
-                            3);
-                    fixedIndexs[index] = true;
-                    detectedCount++;
-                } else {
-                    Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(),
-                            FACE_RECT_COLOR_T, 3);
+        {
+            Rect[] facesArray = faces.toArray();
+            if (facesArray.length > 0) {
+                Rect face = facesArray[mRandom.nextInt(facesArray.length)];
+                { // 座標更新
+                    int width = inputFrame.width();
+                    int height = inputFrame.height();
+
+                    float aspect = (float)height / (float)width;
+                    float posX = -(((float)(face.x + face.width / 2) / (float)width) * 2 - 1);
+                    float posY = -(((float)(face.y + face.height / 2) / (float)height) * 2 - 1)
+                            * aspect;
+                    float dist = (float)(1.0 / Math.atan(Math.PI / 6));
+                    float deltaYaw = (float)(Math.atan(posX / dist) * 256 / Math.PI);
+                    float deltaPitch = (float)(Math.atan(posY / dist) * 256 / Math.PI);
+                    mLastHeadYaw += (int)deltaYaw;
+                    mLastHeadPitch = (int)deltaPitch;
+                    mLastHeadYaw = Math.max(Constants.HEAD.yawMin,
+                            Math.min(Constants.HEAD.yawMax, mLastHeadYaw));
+                    mLastHeadPitch = Math.max(Constants.HEAD.pitchMin,
+                            Math.min(Constants.HEAD.pitchMax, mLastHeadPitch));
                 }
-            }
-        }
-        for (int i = 0; i < mDetectedFaceTime.length; i++) {
-            if (detectedIndexs[i]) {
-                mDetectedFaceTime[i] = (mDetectedFaceTime[i] == 0) ? currTime : Math.min(
-                        mDetectedFaceTime[i], currTime);
-            } else {
-                mDetectedFaceTime[i] = 0;
-            }
-        }
-        if (detectedCount > 1 && onMultiFaceDetected(detectedCount)) {
-            // ok
-        } else {
-            for (int i = 0; i < detectedIndexs.length; i++) {
-                if (detectedIndexs[i]) {
-                    onFaceDetected(facesArray[indexMap[i]], width, height);
-                    break;
-                }
+
+                Core.rectangle(mRgba, face.tl(), face.br(), FACE_RECT_COLOR_T, 3);
+                onFaceDetected(mLastHeadYaw, mLastHeadPitch);
             }
         }
 
@@ -353,9 +335,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
         }
     }
 
-    public void onFaceDetected(Rect rect, int width, int height) {
-        float pos = (float)(rect.x + rect.width / 2) / (float)width;
-
+    private void onFaceDetected(int yaw, int pitch) {
         if (!isEnableAi()) {
             return;
         }
@@ -364,7 +344,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
         }
         ActionModel actionModel;
         { // 左手か右手かどっちの手を振るか選ぶ
-            if (pos < 0.5) {
+            if (yaw <= 127) {
                 actionModel = pickBindedActionRandom(ActionBind.WAVE_LEFT);
             } else {
                 actionModel = pickBindedActionRandom(ActionBind.WAVE_RIGHT);
@@ -379,13 +359,15 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
                 actionModel.getPoseModels().add(poseModel);
             }
         }
+
         { // 頭の方向を変える。ついでに耳をちょっと動かす
             PoseModel headPoseModel = new PoseModel();
-            headPoseModel.setHeadYaw((byte)(0x30 + (int)(0xA0 * pos)));
+            headPoseModel.setHeadYaw((byte)mLastHeadYaw);
+            headPoseModel.setHeadPitch((byte)mLastHeadYaw);
             headPoseModel.setTime(200);
             {
                 PoseModel pm = new PoseModel(headPoseModel);
-                pm.setEarLeft((byte)0xFF);
+                pm.setEarLeft((byte)0xAF);
                 pm.setEarRight((byte)0x7F);
                 actionModel.getPoseModels().add(0, pm);
             }
@@ -398,7 +380,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
             {
                 PoseModel pm = new PoseModel(headPoseModel);
                 pm.setEarLeft((byte)0x7F);
-                pm.setEarRight((byte)0x0);
+                pm.setEarRight((byte)0x3F);
                 actionModel.getPoseModels().add(2, pm);
             }
             {
@@ -410,6 +392,118 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
         }
         mPlayPoseTask = new PlayPoseTask(getAppStub(), this);
         mPlayPoseTask.execute(actionModel);
+    }
+
+    private void onFaceDetected(Rect rect, int width, int height) {
+        float aspect = (float)height / (float)width;
+        float posX = -(((float)(rect.x + rect.width / 2) / (float)width) * 2 - 1);
+        float posY = -(((float)(rect.y + rect.height / 2) / (float)height) * 2 - 1) * aspect;
+        Log.d("Debug", String.format("%.3f,%.3f", posX, posY));
+
+        if (!isEnableAi()) {
+            return;
+        }
+        if (mPlayPoseTask != null) {
+            return;
+        }
+        if (false) {
+            { // 新しい頭の向きを計算
+                float dist = (float)(1.0 / Math.atan(Math.PI / 6));
+                float deltaYaw = (float)(Math.atan(posX / dist) * 256 / Math.PI);
+                float deltaPitch = (float)(Math.atan(posY / dist) * 256 / Math.PI);
+                mLastHeadYaw += (int)deltaYaw;
+                mLastHeadPitch = (int)deltaPitch;
+                mLastHeadYaw = Math.max(Constants.HEAD.yawMin,
+                        Math.min(Constants.HEAD.yawMax, mLastHeadYaw));
+                mLastHeadPitch = Math.max(Constants.HEAD.pitchMin,
+                        Math.min(Constants.HEAD.pitchMax, mLastHeadPitch));
+            }
+            { // 頭の方向を変える。ついでに耳をちょっと動かす
+                PoseModel headPoseModel = new PoseModel();
+                headPoseModel.setHeadYaw((byte)mLastHeadYaw);
+                headPoseModel.setHeadPitch((byte)mLastHeadPitch);
+                headPoseModel.setTime(1000);
+            }
+
+            ActionModel actionModel;
+            { // 左手か右手かどっちの手を振るか選ぶ
+              // 見つからない場合はスタンド状態を設定する
+                actionModel = new ActionModel();
+                actionModel.setPoseModels(new ArrayList<PoseModel>());
+                PoseModel poseModel = new PoseModel();
+                poseModel.makeStandPose();
+                poseModel.setTime(100);
+                poseModel.setHeadYaw((byte)mLastHeadYaw);
+                poseModel.setHeadPitch((byte)mLastHeadYaw);
+                actionModel.getPoseModels().add(poseModel);
+            }
+
+            mPlayPoseTask = new PlayPoseTask(getAppStub(), this);
+            mPlayPoseTask.execute(actionModel);
+        } else {
+            ActionModel actionModel;
+            { // 左手か右手かどっちの手を振るか選ぶ
+                if (posX < 0.5) {
+                    actionModel = pickBindedActionRandom(ActionBind.WAVE_LEFT);
+                } else {
+                    actionModel = pickBindedActionRandom(ActionBind.WAVE_RIGHT);
+                }
+                if (actionModel == null) {
+                    // 見つからない場合はスタンド状態を設定する
+                    actionModel = new ActionModel();
+                    actionModel.setPoseModels(new ArrayList<PoseModel>());
+                    PoseModel poseModel = new PoseModel();
+                    poseModel.makeStandPose();
+                    poseModel.setTime(10);
+                    actionModel.getPoseModels().add(poseModel);
+                }
+            }
+
+            { // 新しい頭の向きを計算
+                float dist = (float)(1.0 / Math.atan(Math.PI / 6));
+                float deltaYaw = (float)(Math.atan(posX / dist) * 256 / Math.PI);
+                float deltaPitch = (float)(Math.atan(posY / dist) * 256 / Math.PI);
+                mLastHeadYaw += (int)deltaYaw;
+                mLastHeadPitch = (int)deltaPitch;
+                mLastHeadYaw = Math.max(Constants.HEAD.yawMin,
+                        Math.min(Constants.HEAD.yawMax, mLastHeadYaw));
+                mLastHeadPitch = Math.max(Constants.HEAD.pitchMin,
+                        Math.min(Constants.HEAD.pitchMax, mLastHeadPitch));
+            }
+
+            { // 頭の方向を変える。ついでに耳をちょっと動かす
+                PoseModel headPoseModel = new PoseModel();
+                headPoseModel.setHeadYaw((byte)mLastHeadYaw);
+                headPoseModel.setHeadPitch((byte)mLastHeadYaw);
+                headPoseModel.setTime(200);
+                {
+                    PoseModel pm = new PoseModel(headPoseModel);
+                    pm.setEarLeft((byte)0xAF);
+                    pm.setEarRight((byte)0x7F);
+                    actionModel.getPoseModels().add(0, pm);
+                }
+                {
+                    PoseModel pm = new PoseModel(headPoseModel);
+                    pm.setEarLeft((byte)0x7F);
+                    pm.setEarRight((byte)0x7F);
+                    actionModel.getPoseModels().add(1, pm);
+                }
+                {
+                    PoseModel pm = new PoseModel(headPoseModel);
+                    pm.setEarLeft((byte)0x7F);
+                    pm.setEarRight((byte)0x3F);
+                    actionModel.getPoseModels().add(2, pm);
+                }
+                {
+                    PoseModel pm = new PoseModel(headPoseModel);
+                    pm.setEarLeft((byte)0x7F);
+                    pm.setEarRight((byte)0x7F);
+                    actionModel.getPoseModels().add(3, pm);
+                }
+            }
+            mPlayPoseTask = new PlayPoseTask(getAppStub(), this);
+            mPlayPoseTask.execute(actionModel);
+        }
     }
 
     @Override
