@@ -293,6 +293,10 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
 
         {
             Rect[] facesArray = faces.toArray();
+            for (int i = 0; i < facesArray.length; i++) {
+                Rect face = facesArray[i];
+                Core.rectangle(mRgba, face.tl(), face.br(), FACE_RECT_COLOR, 3);
+            }
             if (facesArray.length > 0) {
                 Rect face = facesArray[mRandom.nextInt(facesArray.length)];
                 { // 座標更新
