@@ -1,7 +1,12 @@
 
 package net.cattaka.droiball.util;
 
+import net.cattaka.droiball.data.FaceDetectionAlgorism;
+import net.cattaka.droiball.data.WhiteBalance;
 import net.cattaka.droiball.entity.Vector3s;
+
+import org.opencv.core.Size;
+
 import android.content.SharedPreferences;
 
 public class MyPreference {
@@ -12,6 +17,12 @@ public class MyPreference {
     private static final String ACCESS_TOKEN_SECRET = "accessTokenSecret";
 
     private static final String TRACK_WORDS = "trakWords";
+
+    private static String KEY_PREVIEW_SIZE = "PreviewSize";
+
+    private static String KEY_WHITE_BALANCE = "WhiteBalance";
+
+    private static String KEY_FACE_DETECTION_ALGORISM = "FaceDetectionAlgorism";
 
     private SharedPreferences pref;
 
@@ -67,5 +78,69 @@ public class MyPreference {
 
     public void putTrackWords(String accessTokenSecret) {
         editor.putString(TRACK_WORDS, accessTokenSecret);
+    }
+
+    public String getPreviewSize() {
+        return pref.getString(KEY_PREVIEW_SIZE, "800x600");
+    }
+
+    public void putPreviewSize(String previewSize) {
+        editor.putString(KEY_PREVIEW_SIZE, previewSize);
+    }
+
+    public Size getPreviewSizeAsSize() {
+        Size result = null;
+        String str = getPreviewSize();
+        if (str.indexOf('x') >= 0) {
+            String[] ts = str.split("x");
+            if (ts.length >= 2) {
+                try {
+                    double w = Double.parseDouble(ts[0]);
+                    double h = Double.parseDouble(ts[1]);
+                    result = new Size(w, h);
+                } catch (NumberFormatException e) {
+                    // ignore
+                }
+            }
+        }
+        if (result == null) {
+            result = new Size(800, 600);
+        }
+        return result;
+    }
+
+    public WhiteBalance getWhiteBalance() {
+        String name = pref.getString(KEY_WHITE_BALANCE, WhiteBalance.AUTO.name());
+        try {
+            return WhiteBalance.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            return WhiteBalance.AUTO;
+        }
+    }
+
+    public void putWhiteBalance(WhiteBalance whiteBalance) {
+        if (whiteBalance != null) {
+            editor.putString(KEY_WHITE_BALANCE, whiteBalance.name());
+        } else {
+            editor.putString(KEY_WHITE_BALANCE, null);
+        }
+    }
+
+    public FaceDetectionAlgorism getFaceDetectionAlgorism() {
+        String name = pref.getString(KEY_FACE_DETECTION_ALGORISM,
+                FaceDetectionAlgorism.HAARCASCADE_FRONTALFACE_ALT.name());
+        try {
+            return FaceDetectionAlgorism.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            return FaceDetectionAlgorism.HAARCASCADE_FRONTALFACE_ALT;
+        }
+    }
+
+    public void putFaceDetectionAlgorism(FaceDetectionAlgorism FaceDetectionAlgorism) {
+        if (FaceDetectionAlgorism != null) {
+            editor.putString(KEY_FACE_DETECTION_ALGORISM, FaceDetectionAlgorism.name());
+        } else {
+            editor.putString(KEY_FACE_DETECTION_ALGORISM, null);
+        }
     }
 }

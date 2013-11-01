@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import net.cattaka.droiball.data.FaceDetectionAlgorism;
 import net.cattaka.droiball.db.DroiballDatabase;
 import net.cattaka.droiball.fragment.ActionListFragment;
 import net.cattaka.droiball.fragment.AiModeFragment;
@@ -136,10 +137,11 @@ public class AppActivity extends FragmentActivity implements IAppStub, View.OnCl
 
                     try {
                         // load cascade file from application resources
+                        FaceDetectionAlgorism algorism = mMyPreference.getFaceDetectionAlgorism();
                         InputStream is = getResources().openRawResource(
                                 R.raw.lbpcascade_frontalface);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
+                        mCascadeFile = new File(cascadeDir, algorism.filename);
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
 
                         byte[] buffer = new byte[4096];

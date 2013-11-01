@@ -102,7 +102,7 @@
         android:text="Reset" />
 </RelativeLayout>
 
-    <net.cattaka.droiball.view.MyJavaCameraView
+    <net.cattaka.droiball.view.MyNativeCameraView
         android:id="@+id/cameraView"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"

@@ -12,7 +12,7 @@ import net.cattaka.droiball.entity.PoseModel;
 import net.cattaka.droiball.entity.Vector3s;
 import net.cattaka.droiball.task.PlayPoseTask;
 import net.cattaka.droiball.util.MyPreference;
-import net.cattaka.droiball.view.MyJavaCameraView;
+import net.cattaka.droiball.view.MyNativeCameraView;
 import net.cattaka.libgeppa.data.ConnectionState;
 import net.cattaka.libgeppa.data.PacketWrapper;
 
@@ -22,6 +22,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.highgui.Highgui;
+import org.opencv.highgui.VideoCapture;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.samples.fd.DetectionBasedTracker;
 
@@ -108,7 +110,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
 
     private ToggleButton mEnableAiToggle;
 
-    private MyJavaCameraView mOpenCvCameraView;
+    private MyNativeCameraView mOpenCvCameraView;
 
     private MyPreference mPreference;
 
@@ -165,7 +167,7 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
         mPreference = new MyPreference(PreferenceManager.getDefaultSharedPreferences(getActivity()));
         mOffsetAccel = mPreference.getOffsetAccel();
 
-        mOpenCvCameraView = (MyJavaCameraView)view.findViewById(R.id.cameraView);
+        mOpenCvCameraView = (MyNativeCameraView)view.findViewById(R.id.cameraView);
         mOpenCvCameraView.setCvCameraViewListener(mCvCameraViewListener);
         mOpenCvCameraView.setCameraId(1);
 
@@ -179,6 +181,9 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
         super.onResume();
         mGray = new Mat();
         mRgba = new Mat();
+
+        org.opencv.core.Size size = getMyPreference().getPreviewSizeAsSize();
+        mOpenCvCameraView.setPreviewSize(size);
     }
 
     @Override
@@ -209,11 +214,17 @@ public class AiModeFragment extends BaseFragment implements View.OnClickListener
 
     @Override
     public void onPageSelected() {
+        MyPreference pref = getMyPreference();
+
         mEnableAiToggle.setChecked(false);
         mWakelock.acquire();
         mHandler.sendEmptyMessageDelayed(EVENT_GET_ACCEL, INTERVAL_GET_ACCEL);
         mHandler.sendEmptyMessageDelayed(EVENT_ACTION_RANDOM, INTERVAL_ACTION_RANDOM);
         mOpenCvCameraView.enableView();
+
+        VideoCapture capture = mOpenCvCameraView.getVideoCapture();
+        capture.set(Highgui.CV_CAP_PROP_ANDROID_WHITE_BALANCE, pref.getWhiteBalance().value);
+        capture.set(Highgui.CV_CAP_PROP_ANDROID_FOCUS_MODE, Highgui.CV_CAP_ANDROID_FOCUS_MODE_AUTO);
     }
 
     @Override
