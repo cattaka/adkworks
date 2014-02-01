@@ -45,7 +45,7 @@
 
             </activity>
 
-        <service android:name="net.cattaka.android.humitemp4pd.GeppaServiceEx" android:exported="false">
+        <service android:name="net.cattaka.android.humitemp4pd.GeppaServiceEx" android:exported="false" android:process=":remote">
         </service>
         <activity android:name="net.cattaka.android.humitemp4pd.GraphActivity"></activity>
         <activity android:name="net.cattaka.android.humitemp4pd.SelectDeviceActivity"></activity>

@@ -66,7 +66,7 @@ public class GeppaServiceEx extends ActiveGeppaService<MyPacket> {
         PowerManager pm = (PowerManager)getSystemService(POWER_SERVICE);
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Constants.TAG);
 
-        mRestenerSeq = registerConnectionListener(mListener);
+        mRestenerSeq = registerServiceListener(mListener);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class GeppaServiceEx extends ActiveGeppaService<MyPacket> {
             mWakeLock.release();
         }
 
-        unregisterConnectionListener(mRestenerSeq);
+        unregisterServiceListener(mRestenerSeq);
     }
 
     private void scheduleRecord() {

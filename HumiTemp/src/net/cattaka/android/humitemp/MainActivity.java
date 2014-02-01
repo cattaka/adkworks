@@ -5,8 +5,8 @@ import java.text.DecimalFormat;
 
 import net.cattaka.android.humitemp.data.MyPacket;
 import net.cattaka.android.humitemp.data.OpCode;
-import net.cattaka.libgeppa.IGeppaService;
-import net.cattaka.libgeppa.IGeppaServiceListener;
+import net.cattaka.libgeppa.IPassiveGeppaService;
+import net.cattaka.libgeppa.IPassiveGeppaServiceListener;
 import net.cattaka.libgeppa.data.PacketWrapper;
 import android.app.Activity;
 import android.content.ComponentName;
@@ -37,13 +37,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private MainActivity me = this;
 
-    private IGeppaService mService;
+    private IPassiveGeppaService mService;
 
     private TextView mHumidityText;
 
     private TextView mTemperatureText;
 
-    private IGeppaServiceListener mGeppaServiceListener = new IGeppaServiceListener.Stub() {
+    private IPassiveGeppaServiceListener mGeppaServiceListener = new IPassiveGeppaServiceListener.Stub() {
         public void onConnectionStateChanged(net.cattaka.libgeppa.data.ConnectionState arg0)
                 throws android.os.RemoteException {
         };
@@ -64,7 +64,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder binder) {
-            mService = IGeppaService.Stub.asInterface(binder);
+            mService = IPassiveGeppaService.Stub.asInterface(binder);
             try {
                 mService.registerGeppaServiceListener(mGeppaServiceListener);
             } catch (RemoteException e) {

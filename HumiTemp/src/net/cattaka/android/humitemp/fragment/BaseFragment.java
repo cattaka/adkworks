@@ -5,11 +5,11 @@ import net.cattaka.android.humitemp.IAppListener;
 import net.cattaka.android.humitemp.IAppStub;
 import net.cattaka.android.humitemp.db.DbHelper;
 import net.cattaka.android.humitemp.util.MyPreference;
-import net.cattaka.libgeppa.IGeppaService;
+import net.cattaka.libgeppa.IPassiveGeppaService;
 import android.support.v4.app.Fragment;
 
 public abstract class BaseFragment extends Fragment implements IAppListener {
-    protected IGeppaService getGeppaService() {
+    protected IPassiveGeppaService getGeppaService() {
         return ((IAppStub)getActivity()).getGeppaService();
     }
 
