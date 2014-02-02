@@ -1,0 +1,40 @@
+<resources>
+
+    <string name="app_name">HumiTemp4Pd</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="btn_controller">Controller!</string>
+    <string name="graph_hour">hour</string>
+    <string name="graph_day">day</string>
+    <string name="graph_step_min">x%1$dstep(%2$dmin)</string>
+    <string name="graph_step">x%1$dstep</string>
+    
+    <string name="title_select_local_device">Select Local device</string>
+    <string name="title_input_socket_address">Input socket address</string>
+    <string name="title_edit_socket_address">Edit socket address</string>
+    <string name="label_socket_addresses">Socket addresses</string>
+    <string name="label_ble_devices">BLE Devices</string>
+    
+    <string name="label_host_name">Host name</string>
+    <string name="label_port">Port</string>
+    
+    <string name="btn_delete">Delete</string>
+    
+    <string name="notification_title_connected">Device connected.</string>
+
+        <string name="msg_now_connecting">Now connecting</string>
+    
+            <string name="item_disconnect">Disconnect</string>
+    <string name="item_dummy">Dummy</string>
+        
+    <string-array name="label_week">
+        <item>%1$d(Sun)</item>
+        <item>%1$d(Mon)</item>
+        <item>%1$d(Tue)</item>
+        <item>%1$d(Wed)</item>
+        <item>%1$d(Thu)</item>
+        <item>%1$d(Fri)</item>
+        <item>%1$d(Sat)</item>
+    </string-array>
+
+</resources>
