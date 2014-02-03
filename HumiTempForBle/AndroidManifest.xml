@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="net.cattaka.android.humitemp4pd"
+    package="net.cattaka.android.humitemp4ble"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -29,13 +29,13 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <application
-        android:name="net.cattaka.android.humitemp4pd.MyApplication"
+        android:name="net.cattaka.android.humitemp4ble.MyApplication"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <uses-library android:name="com.android.future.usb.accessory" />
 
-        <activity android:name="net.cattaka.android.humitemp4pd.MainActivity" >
+        <activity android:name="net.cattaka.android.humitemp4ble.MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -51,21 +51,21 @@
         </activity>
 
         <service
-            android:name="net.cattaka.android.humitemp4pd.HumiTempService"
+            android:name="net.cattaka.android.humitemp4ble.HumiTempService"
             android:exported="false"
             >
         <!-- android:process=":remote" -->    
         </service>
 
        <service
-            android:name="net.cattaka.android.humitemp4pd.TelnetSqliteService"
+            android:name="net.cattaka.android.humitemp4ble.TelnetSqliteService"
             android:exported="false"
             >
         </service>
         
-        <activity android:name="net.cattaka.android.humitemp4pd.GraphActivity" >
+        <activity android:name="net.cattaka.android.humitemp4ble.GraphActivity" >
         </activity>
-        <activity android:name="net.cattaka.android.humitemp4pd.SelectDeviceActivity" >
+        <activity android:name="net.cattaka.android.humitemp4ble.SelectDeviceActivity" >
         </activity>
     </application>
 
