@@ -46,7 +46,7 @@ public class SelectDeviceActivity extends Activity implements OnClickListener, O
     @Override
     protected void onStart() {
         super.onStart();
-
+        
         startScanBleDevice();
     }
 

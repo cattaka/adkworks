@@ -1,6 +1,7 @@
 
 package net.cattaka.android.humitemp4ble;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -26,17 +27,24 @@ public class MainActivity extends Activity implements View.OnClickListener, OnIt
     private static final int REQUEST_CODE_SELECT_DEVICE = 1;
 
     private static class DeviceModelBundle {
+    	SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
         DeviceModel model;
 
         String date;
 
-        private DeviceModelBundle(DeviceModel model, String date) {
+        private DeviceModelBundle(DeviceModel model) {
             super();
-            this.model = model;
-            this.date = date;
+            setModel(model);
         }
+        
+        public void setModel(DeviceModel model) {
+			this.model = model;
+			this.date = (model.getLastUpdate() != null) ?df.format(model.getLastUpdate()) : "";
+		}
 
-        @Override
+
+
+		@Override
         public String toString() {
             return String.format(Locale.ROOT, "%d %s Temp=%01.2f[deg],Humi=%01.2f[%%] %s",
                     model.getId(), model.getAddress(), model.getLastTemplature(),
@@ -131,8 +139,6 @@ public class MainActivity extends Activity implements View.OnClickListener, OnIt
     }
 
     private void onServiceConnected() {
-        java.text.DateFormat df = DateFormat.getTimeFormat(this);
-
         try {
             @SuppressWarnings("unchecked")
             ArrayAdapter<DeviceModelBundle> adapter = (ArrayAdapter<DeviceModelBundle>)mDeviceList
@@ -141,9 +147,7 @@ public class MainActivity extends Activity implements View.OnClickListener, OnIt
 
             List<DeviceModel> models = mService.findDeviceModels();
             for (DeviceModel model : models) {
-                String date = (model.getLastUpdate() != null) ? df.format(model.getLastUpdate())
-                        : "";
-                adapter.add(new DeviceModelBundle(model, date));
+                adapter.add(new DeviceModelBundle(model));
             }
             adapter.notifyDataSetInvalidated();
         } catch (RemoteException e) {
@@ -159,7 +163,7 @@ public class MainActivity extends Activity implements View.OnClickListener, OnIt
         for (int i = 0; i < adapter.getCount(); i++) {
             DeviceModelBundle t = adapter.getItem(i);
             if (t.model.getId().longValue() == model.getId().longValue()) {
-                t.model = model;
+                t.setModel(model);
                 changed = true;
                 break;
             }
@@ -189,6 +193,9 @@ public class MainActivity extends Activity implements View.OnClickListener, OnIt
                 throw new RuntimeException(e);
             }
         } else if (v.getId() == R.id.selectDeviceButton) {
+            Intent serviceIntent = new Intent(this,HumiTempService.class);
+            stopService(serviceIntent);
+            
             Intent intent = new Intent(this, SelectDeviceActivity.class);
             startActivityForResult(intent, REQUEST_CODE_SELECT_DEVICE);
         }

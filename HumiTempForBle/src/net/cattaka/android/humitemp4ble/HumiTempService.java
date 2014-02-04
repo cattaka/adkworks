@@ -1,4 +1,3 @@
-
 package net.cattaka.android.humitemp4ble;
 
 import java.util.ArrayList;
@@ -23,269 +22,277 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.util.SparseArray;
 
 public class HumiTempService extends Service implements IHumiTempServiceWrapper {
-    private static final int EVENT_UPDATE_SENSOR_VALUES = 1;
+	private static final int EVENT_UPDATE_SENSOR_VALUES = 1;
 
-    private static final int INTERVALUPDATE_SENSOR_VALUES = 60000;
+	private static final int INTERVALUPDATE_SENSOR_VALUES = 30000;
 
-    private static class DeviceBundle {
-        boolean needRecord = false;
+	private static class DeviceBundle {
+		BluetoothDevice bluetoothDevice;
 
-        BluetoothDevice bluetoothDevice;
+		BluetoothGatt gatt;
 
-        BluetoothGatt gatt;
+		DeviceModel deviceModel;
 
-        DeviceModel deviceModel;
+		MyGattCallbackEx myGattCallback;
 
-        MyGattCallbackEx myGattCallback;
+		private DeviceBundle(BluetoothDevice bluetoothDevice,
+				BluetoothGatt gatt, DeviceModel deviceModel,
+				MyGattCallbackEx myGattCallback) {
+			super();
+			this.bluetoothDevice = bluetoothDevice;
+			this.gatt = gatt;
+			this.deviceModel = deviceModel;
+			this.myGattCallback = myGattCallback;
+			this.myGattCallback.deviceBundle = this;
+		}
+	}
 
-        private DeviceBundle(BluetoothDevice bluetoothDevice, BluetoothGatt gatt,
-                DeviceModel deviceModel, MyGattCallbackEx myGattCallback, boolean needRecord) {
-            super();
-            this.bluetoothDevice = bluetoothDevice;
-            this.gatt = gatt;
-            this.deviceModel = deviceModel;
-            this.myGattCallback = myGattCallback;
-            this.myGattCallback.deviceBundle = this;
-            this.needRecord = needRecord;
-        }
+	private class MyGattCallbackEx extends MyGattCallback implements
+			MyBtListener {
+		DeviceBundle deviceBundle;
+		long lastReceiveTime = 0;
 
-    }
+		public MyGattCallbackEx() {
+			super();
+			this.setListener(this);
+		}
 
-    private class MyGattCallbackEx extends MyGattCallback implements MyBtListener {
-        DeviceBundle deviceBundle;
+		@Override
+		public void onDisconnected() {
+		}
 
-        public MyGattCallbackEx() {
-            super();
-            this.setListener(this);
-        }
+		public void onReceivePacket(int temperature, int humidity) {
+			long currtime = SystemClock.elapsedRealtime();
+			if (currtime - lastReceiveTime > INTERVALUPDATE_SENSOR_VALUES) {
+				lastReceiveTime = currtime;
+				float t = (float) temperature / 100f;
+				float h = (float) humidity / 100f;
+				me.onReceivePacket(deviceBundle, t, h);
+			}
+		};
 
-        @Override
-        public void onDisconnected() {
-            mAddress2DeviceBundle.remove(deviceBundle.bluetoothDevice.getAddress());
-        }
+		@Override
+		public void onRssi(int rssi) {
+			// TODO Auto-generated method stub
 
-        public void onReceivePacket(int temperature, int humidity) {
-            float t = (float)temperature / 100f;
-            float h = (float)humidity / 100f;
-            me.onReceivePacket(deviceBundle, t, h);
-            // Toast.makeText(me, String.format("T=%f, H=%f", t, h),
-            // Toast.LENGTH_SHORT).show();
-        };
+		}
+	}
 
-        @Override
-        public void onRssi(int rssi) {
-            // TODO Auto-generated method stub
+	private static final Handler sHandler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			HumiTempService target = (HumiTempService) msg.obj;
+			if (msg.what == EVENT_UPDATE_SENSOR_VALUES) {
+				target.updateSensorValues();
 
-        }
-    }
+				Message nextMessage = sHandler.obtainMessage(
+						EVENT_UPDATE_SENSOR_VALUES, target);
+				sendMessageDelayed(nextMessage, INTERVALUPDATE_SENSOR_VALUES);
+			}
+		};
+	};
 
-    private static final Handler sHandler = new Handler() {
-        public void handleMessage(android.os.Message msg) {
-            HumiTempService target = (HumiTempService)msg.obj;
-            if (msg.what == EVENT_UPDATE_SENSOR_VALUES) {
-                target.updateSensorValues(true, true);
+	private HumiTempService me = this;
 
-                Message nextMessage = sHandler.obtainMessage(EVENT_UPDATE_SENSOR_VALUES, target);
-                sendMessageDelayed(nextMessage, INTERVALUPDATE_SENSOR_VALUES);
-            }
-        };
-    };
+	private DbHelper mDbHelper;
 
-    private HumiTempService me = this;
+	private BluetoothAdapter mBluetoothAdapter;
 
-    private DbHelper mDbHelper;
+	private Map<String, DeviceBundle> mAddress2DeviceBundle;
 
-    private BluetoothAdapter mBluetoothAdapter;
+	private int mServiceListenersSeq = 0;
 
-    private Map<String, DeviceBundle> mAddress2DeviceBundle;
+	private SparseArray<IHumiTempServiceListener> mServiceListeners;
 
-    private int mServiceListenersSeq = 0;
+	private IBinder mBinder = new IHumiTempService.Stub() {
 
-    private SparseArray<IHumiTempServiceListener> mServiceListeners;
+		@Override
+		public List<DeviceModel> findDeviceModels() throws RemoteException {
+			return me.findDeviceModels();
+		}
 
-    private IBinder mBinder = new IHumiTempService.Stub() {
+		@Override
+		public DeviceModel findDeviceModel(String uuid) throws RemoteException {
+			return me.findDeviceModel(uuid);
+		}
 
-        @Override
-        public List<DeviceModel> findDeviceModels() throws RemoteException {
-            return me.findDeviceModels();
-        }
+		@Override
+		public boolean addDevice(BluetoothDevice device) throws RemoteException {
+			return me.addDevice(device);
+		}
 
-        @Override
-        public DeviceModel findDeviceModel(String uuid) throws RemoteException {
-            return me.findDeviceModel(uuid);
-        }
+		@Override
+		public boolean removeDevice(String uuid) throws RemoteException {
+			return me.removeDevice(uuid);
+		}
 
-        @Override
-        public boolean addDevice(BluetoothDevice device) throws RemoteException {
-            return me.addDevice(device);
-        }
+		@Override
+		public List<DeviceModel> updateSensorValues() throws RemoteException {
+			return me.updateSensorValues();
+		}
 
-        @Override
-        public boolean removeDevice(String uuid) throws RemoteException {
-            return me.removeDevice(uuid);
-        }
+		@Override
+		public int registerServiceListener(IHumiTempServiceListener listener)
+				throws RemoteException {
+			return me.registerServiceListener(listener);
+		}
 
-        @Override
-        public List<DeviceModel> updateSensorValues() throws RemoteException {
-            return me.updateSensorValues();
-        }
+		public boolean unregisterServiceListener(int seq)
+				throws RemoteException {
+			return me.unregisterServiceListener(seq);
+		};
+	};
 
-        @Override
-        public int registerServiceListener(IHumiTempServiceListener listener)
-                throws RemoteException {
-            return me.registerServiceListener(listener);
-        }
+	public void onCreate() {
+		super.onCreate();
+		mDbHelper = new DbHelper(this);
+		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        public boolean unregisterServiceListener(int seq) throws RemoteException {
-            return me.unregisterServiceListener(seq);
-        };
-    };
+		mServiceListeners = new SparseArray<IHumiTempServiceListener>();
 
-    public void onCreate() {
-        super.onCreate();
-        mDbHelper = new DbHelper(this);
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+		mAddress2DeviceBundle = new HashMap<String, HumiTempService.DeviceBundle>();
 
-        mServiceListeners = new SparseArray<IHumiTempServiceListener>();
+		sHandler.obtainMessage(EVENT_UPDATE_SENSOR_VALUES, this).sendToTarget();
 
-        mAddress2DeviceBundle = new HashMap<String, HumiTempService.DeviceBundle>();
+		{
+			Intent serviceIntent = new Intent(this, TelnetSqliteService.class);
+			startService(serviceIntent);
+		}
+	};
 
-        sHandler.obtainMessage(EVENT_UPDATE_SENSOR_VALUES, this).sendToTarget();
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		stopAll();
 
-        {
-            Intent serviceIntent = new Intent(this, TelnetSqliteService.class);
-            startService(serviceIntent);
-        }
-    };
+		sHandler.removeMessages(EVENT_UPDATE_SENSOR_VALUES, this);
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        stopAll();
+		if (mDbHelper != null) {
+			mDbHelper.close();
+			mDbHelper = null;
+		}
+	}
 
-        sHandler.removeMessages(EVENT_UPDATE_SENSOR_VALUES, this);
+	@Override
+	public IBinder onBind(Intent intent) {
+		return mBinder;
+	}
 
-        if (mDbHelper != null) {
-            mDbHelper.close();
-            mDbHelper = null;
-        }
-    }
+	@Override
+	public List<DeviceModel> findDeviceModels() throws RemoteException {
+		return mDbHelper.findDeviceModels();
+	}
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return mBinder;
-    }
+	@Override
+	public DeviceModel findDeviceModel(String address) throws RemoteException {
+		return mDbHelper.findDeviceModel(address);
+	}
 
-    @Override
-    public List<DeviceModel> findDeviceModels() throws RemoteException {
-        return mDbHelper.findDeviceModels();
-    }
+	@Override
+	public boolean addDevice(BluetoothDevice device) throws RemoteException {
+		String uuid = device.getAddress();
+		DeviceModel oldDevice = mDbHelper.findDeviceModel(uuid);
+		if (oldDevice != null) {
+			return false;
+		}
+		DeviceModel model = new DeviceModel();
+		model.setAddress(uuid);
+		model.setName(uuid);
+		return mDbHelper.registerDeviceModel(model);
 
-    @Override
-    public DeviceModel findDeviceModel(String address) throws RemoteException {
-        return mDbHelper.findDeviceModel(address);
-    }
+	}
 
-    @Override
-    public boolean addDevice(BluetoothDevice device) throws RemoteException {
-        String uuid = device.getAddress();
-        DeviceModel oldDevice = mDbHelper.findDeviceModel(uuid);
-        if (oldDevice != null) {
-            return false;
-        }
-        DeviceModel model = new DeviceModel();
-        model.setAddress(uuid);
-        model.setName(uuid);
-        return mDbHelper.registerDeviceModel(model);
+	@Override
+	public boolean removeDevice(String uuid) throws RemoteException {
+		return mDbHelper.deleteDeviceModel(uuid);
+	}
 
-    }
+	@Override
+	public int registerServiceListener(IHumiTempServiceListener listener)
+			throws RemoteException {
+		mServiceListeners.put(++mServiceListenersSeq, listener);
+		return mServiceListenersSeq;
+	}
 
-    @Override
-    public boolean removeDevice(String uuid) throws RemoteException {
-        return mDbHelper.deleteDeviceModel(uuid);
-    }
+	public boolean unregisterServiceListener(int seq) throws RemoteException {
+		boolean result = (mServiceListeners.get(seq) != null);
+		mServiceListeners.remove(seq);
+		return result;
+	};
 
-    @Override
-    public int registerServiceListener(IHumiTempServiceListener listener) throws RemoteException {
-        mServiceListeners.put(++mServiceListenersSeq, listener);
-        return mServiceListenersSeq;
-    }
+	@Override
+	public IBinder asBinder() {
+		// not used
+		return null;
+	}
 
-    public boolean unregisterServiceListener(int seq) throws RemoteException {
-        boolean result = (mServiceListeners.get(seq) != null);
-        mServiceListeners.remove(seq);
-        return result;
-    };
+	@Override
+	public List<DeviceModel> updateSensorValues() {
+		List<DeviceModel> result = new ArrayList<DeviceModel>();
+		List<DeviceModel> deviceModels = mDbHelper.findDeviceModels();
+		for (DeviceModel deviceModel : deviceModels) {
+			DeviceBundle bundle = mAddress2DeviceBundle.get(deviceModel
+					.getAddress());
+			if (bundle != null) {
+				if (bundle.myGattCallback.isConnected()) {
+					// OK
+				} else {
+					bundle.gatt.connect();
+				}
+			} else {
+				BluetoothDevice device = mBluetoothAdapter
+						.getRemoteDevice(deviceModel.getAddress());
+				MyGattCallbackEx callback = new MyGattCallbackEx();
+				BluetoothGatt gatt = device.connectGatt(this, false, callback);
+				bundle = new DeviceBundle(device, gatt, deviceModel, callback);
+				mAddress2DeviceBundle.put(deviceModel.getAddress(), bundle);
+			}
+		}
+		return result;
+	}
 
-    @Override
-    public IBinder asBinder() {
-        // not used
-        return null;
-    }
+	private void stopAll() {
+		for (DeviceBundle bundle : mAddress2DeviceBundle.values()) {
+			bundle.gatt.disconnect();
+			bundle.gatt.close();
+		}
+		mAddress2DeviceBundle.clear();
+	}
 
-    @Override
-    public List<DeviceModel> updateSensorValues() {
-        return updateSensorValues(false, false);
-    }
+	public void onReceivePacket(DeviceBundle bundle, float temperature,
+			float humidity) {
+		// Toast.makeText(me, String.format("T=%f, H=%f", temperature,
+		// humidity),
+		// Toast.LENGTH_SHORT).show();
+		Date date = new Date();
+		final DeviceModel deviceModel = bundle.deviceModel;
+		{
+			deviceModel.setLastHumidity(humidity);
+			deviceModel.setLastTemplature(temperature);
+			deviceModel.setLastUpdate(date);
+			mDbHelper.registerDeviceModel(deviceModel);
+		}
 
-    public List<DeviceModel> updateSensorValues(boolean resetAll, boolean needRecord) {
-        if (resetAll) {
-            stopAll();
-        }
+		{
+			HumiTempModel model = new HumiTempModel();
+			model.setDeviceId(bundle.deviceModel.getId());
+			model.setDate(date);
+			model.setHumidity(humidity);
+			model.setTemperature(temperature);
+			mDbHelper.registerHumiTempModel(model);
+		}
 
-        List<DeviceModel> result = new ArrayList<DeviceModel>();
-        List<DeviceModel> deviceModels = mDbHelper.findDeviceModels();
-        for (DeviceModel deviceModel : deviceModels) {
-            DeviceBundle bundle = mAddress2DeviceBundle.get(deviceModel.getAddress());
-            if (bundle != null) {
-                continue;
-            }
-            BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(deviceModel.getAddress());
-            MyGattCallbackEx callback = new MyGattCallbackEx();
-            BluetoothGatt gatt = device.connectGatt(this, false, callback);
-            bundle = new DeviceBundle(device, gatt, deviceModel, callback, needRecord);
-            mAddress2DeviceBundle.put(deviceModel.getAddress(), bundle);
-        }
-        return result;
-    }
-
-    private void stopAll() {
-        for (DeviceBundle bundle : mAddress2DeviceBundle.values()) {
-            bundle.gatt.disconnect();
-            bundle.gatt.close();
-        }
-        mAddress2DeviceBundle.clear();
-    }
-
-    public void onReceivePacket(DeviceBundle bundle, float temperature, float humidity) {
-        Date date = new Date();
-        final DeviceModel deviceModel = bundle.deviceModel;
-        {
-            deviceModel.setLastHumidity(humidity);
-            deviceModel.setLastTemplature(temperature);
-            deviceModel.setLastUpdate(date);
-            mDbHelper.registerDeviceModel(deviceModel);
-        }
-
-        if (bundle.needRecord) {
-            HumiTempModel model = new HumiTempModel();
-            model.setDeviceId(bundle.deviceModel.getId());
-            model.setDate(date);
-            model.setHumidity(humidity);
-            model.setTemperature(temperature);
-            mDbHelper.registerHumiTempModel(model);
-        }
-
-        AidlUtil.callMethods(mServiceListeners,
-                new AidlUtil.CallFunction<IHumiTempServiceListener>() {
-                    @Override
-                    public boolean run(IHumiTempServiceListener item) throws RemoteException {
-                        item.onDeviceModelUpdated(deviceModel);
-                        return true;
-                    }
-                });
-    }
+		AidlUtil.callMethods(mServiceListeners,
+				new AidlUtil.CallFunction<IHumiTempServiceListener>() {
+					@Override
+					public boolean run(IHumiTempServiceListener item)
+							throws RemoteException {
+						item.onDeviceModelUpdated(deviceModel);
+						return true;
+					}
+				});
+	}
 }
