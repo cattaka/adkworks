@@ -37,6 +37,8 @@ public abstract class MyGattCallback extends BluetoothGattCallback implements IG
 
     private IGattCallbackOnUi mGattCallbackOnUi = new IGattCallbackOnUiAsync(this);
 
+    private boolean mConnected;
+    
     public MyGattCallback() {
         super();
     }
@@ -63,10 +65,10 @@ public abstract class MyGattCallback extends BluetoothGattCallback implements IG
         // newState);
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             mBluetoothGatt = gatt;
+            mConnected = true;
             gatt.discoverServices();
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            mBluetoothGatt.close();
-            mBluetoothGatt = null;
+            mConnected = false;
             mListener.onDisconnected();
         }
     }
@@ -123,8 +125,6 @@ public abstract class MyGattCallback extends BluetoothGattCallback implements IG
     @Override
     public void onCharacteristicChangedOnUi(BluetoothGatt gatt,
             BluetoothGattCharacteristic characteristic) {
-        gatt.disconnect();
-        gatt.close();
         onInnerReceivePacket(gatt, characteristic.getValue());
     }
 
@@ -155,11 +155,13 @@ public abstract class MyGattCallback extends BluetoothGattCallback implements IG
             return;
         }
         MyPacketFactory factory = new MyPacketFactory();
-        MyPacket myPacket;
+        MyPacket myPacket = null;
         try {
             myPacket = factory.readPacket(new ByteArrayInputStream(byteArray));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+        }
+        if (myPacket == null) {
+        	return;
         }
         byte[] data = myPacket.getData();
         if (myPacket == null || myPacket.getData() == null && myPacket.getDataLen() < 8) {
@@ -171,14 +173,10 @@ public abstract class MyGattCallback extends BluetoothGattCallback implements IG
                 | ((0xFF & data[6]) << 8) | ((0xFF & data[7]) << 0));
 
         mListener.onReceivePacket(temperature, humidity);
-
-        gatt.close();
-        mBluetoothGatt = null;
-        mListener.onDisconnected();
     }
 
     public boolean isConnected() {
-        return mBluetoothGatt != null;
+        return mConnected;
     }
 
 }

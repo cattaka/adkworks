@@ -79,7 +79,8 @@ void setup()
     initMyServo(1, SERVO_ARM_RIGHT,  500+rightArmOffset, 2400+rightArmOffset, 0x7F, 0xFF);
     initMyServo(2, SERVO_FOOT_LEFT,  1000+footOffset, 1900+footOffset, 0x7F, 0xFF);
     initMyServo(3, SERVO_FOOT_RIGHT, 1000-footOffset, 1900-footOffset, 0x7F, 0xFF);
-    initMyServo(4, SERVO_HEAD_YAW,   500, 2400, 0x7F, 0xFF);
+    initMyServo(4, SERVO_HEAD_YAW,   1000, 1900, 0x7F, 0xFF);
+    //initMyServo(4, SERVO_HEAD_YAW,   500, 2400, 0x7F, 0xFF);
     initMyServo(5, SERVO_HEAD_PITCH, 500, 2400, 0x7F, 0xFF);
     initMyServo(6, SERVO_TAIL_YAW,   500, 2400, 0x7F, 0xFF);
     initMyServo(7, SERVO_TAIL_PITCH, 500, 2400, 0x7F, 0xFF);
