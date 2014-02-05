@@ -10,9 +10,17 @@ import java.util.Map;
 import net.cattaka.android.humitemp4ble.binder.IHumiTempServiceWrapper;
 import net.cattaka.android.humitemp4ble.bluetooth.MyBtListener;
 import net.cattaka.android.humitemp4ble.bluetooth.MyGattCallback;
+import net.cattaka.android.humitemp4ble.core.MyPreference;
+import net.cattaka.android.humitemp4ble.data.HttpResultInfo;
+import net.cattaka.android.humitemp4ble.data.RegisterResultInfo;
+import net.cattaka.android.humitemp4ble.data.UserInfo;
 import net.cattaka.android.humitemp4ble.db.DbHelper;
 import net.cattaka.android.humitemp4ble.entity.DeviceModel;
 import net.cattaka.android.humitemp4ble.entity.HumiTempModel;
+import net.cattaka.android.humitemp4ble.task.RegisterTask;
+import net.cattaka.android.humitemp4ble.task.RegisterTask.IRegisterTaskListener;
+import net.cattaka.android.humitemp4ble.task.UploadTask;
+import net.cattaka.android.humitemp4ble.task.UploadTask.IUploadTaskListener;
 import net.cattaka.android.humitemp4ble.util.AidlUtil;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -28,7 +36,11 @@ import android.util.SparseArray;
 public class HumiTempService extends Service implements IHumiTempServiceWrapper {
     private static final int EVENT_UPDATE_SENSOR_VALUES = 1;
 
-    private static final int INTERVALUPDATE_SENSOR_VALUES = 60000;
+    private static final int EVENT_UPLOAD = 2;
+
+    private static final int INTERVAL_UPDATE_SENSOR_VALUES = 60000;
+
+    private static final int INTERVAL_UPLOAD = 60000 * 60;
 
     private static class DeviceBundle {
         boolean needRecord = false;
@@ -89,7 +101,12 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
                 target.updateSensorValues(true, true);
 
                 Message nextMessage = sHandler.obtainMessage(EVENT_UPDATE_SENSOR_VALUES, target);
-                sendMessageDelayed(nextMessage, INTERVALUPDATE_SENSOR_VALUES);
+                sendMessageDelayed(nextMessage, INTERVAL_UPDATE_SENSOR_VALUES);
+            } else if (msg.what == EVENT_UPLOAD) {
+                target.requestUpload();
+
+                Message nextMessage = sHandler.obtainMessage(EVENT_UPLOAD, target);
+                sendMessageDelayed(nextMessage, INTERVAL_UPLOAD);
             }
         };
     };
@@ -105,6 +122,8 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
     private int mServiceListenersSeq = 0;
 
     private SparseArray<IHumiTempServiceListener> mServiceListeners;
+
+    private MyPreference mPreference;
 
     private IBinder mBinder = new IHumiTempService.Stub() {
 
@@ -139,14 +158,31 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
             return me.registerServiceListener(listener);
         }
 
+        @Override
         public boolean unregisterServiceListener(int seq) throws RemoteException {
             return me.unregisterServiceListener(seq);
         };
+
+        @Override
+        public boolean regiterUser(String username) throws RemoteException {
+            return me.regiterUser(username);
+        }
+
+        @Override
+        public boolean requestUpload() throws RemoteException {
+            return me.requestUpload();
+        }
+
+        @Override
+        public UserInfo getUserInfo() throws RemoteException {
+            return me.getUserInfo();
+        }
     };
 
     public void onCreate() {
         super.onCreate();
         mDbHelper = new DbHelper(this);
+        mPreference = new MyPreference(this);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         mServiceListeners = new SparseArray<IHumiTempServiceListener>();
@@ -154,6 +190,7 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
         mAddress2DeviceBundle = new HashMap<String, HumiTempService.DeviceBundle>();
 
         sHandler.obtainMessage(EVENT_UPDATE_SENSOR_VALUES, this).sendToTarget();
+        sHandler.obtainMessage(EVENT_UPLOAD, this).sendToTarget();
 
         {
             Intent serviceIntent = new Intent(this, TelnetSqliteService.class);
@@ -167,6 +204,7 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
         stopAll();
 
         sHandler.removeMessages(EVENT_UPDATE_SENSOR_VALUES, this);
+        sHandler.removeMessages(EVENT_UPLOAD, this);
 
         if (mDbHelper != null) {
             mDbHelper.close();
@@ -287,5 +325,130 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
                         return true;
                     }
                 });
+    }
+
+    private RegisterTask mRunningTask;
+
+    private UploadTask mUploadTask;
+
+    public boolean regiterUser(String username) {
+        UserInfo userInfo = mPreference.getUserInfo();
+        if (userInfo != null) {
+            return false;
+        }
+        if (mRunningTask != null) {
+            return false;
+        }
+        mRunningTask = new RegisterTask(new IRegisterTaskListener() {
+            @Override
+            public void onRegisterTaskStart() {
+                AidlUtil.callMethods(mServiceListeners,
+                        new AidlUtil.CallFunction<IHumiTempServiceListener>() {
+                            public boolean run(IHumiTempServiceListener item)
+                                    throws RemoteException {
+                                item.onWebEvent(Constants.WEB_EVENT_REGISTERING_BEGIN);
+                                return true;
+                            };
+                        });
+            }
+
+            @Override
+            public void onRegisterTaskFinish(RegisterResultInfo info) {
+                mRunningTask = null;
+                if (info != null && info.isResult()) {
+                    mPreference.edit();
+                    mPreference.putUserInfo(info.toUserInfo());
+                    mPreference.commit();
+                    AidlUtil.callMethods(mServiceListeners,
+                            new AidlUtil.CallFunction<IHumiTempServiceListener>() {
+                                public boolean run(IHumiTempServiceListener item)
+                                        throws RemoteException {
+                                    item.onWebEvent(Constants.WEB_EVENT_REGISTERING_FINISHED);
+                                    return true;
+                                };
+                            });
+                } else {
+                    AidlUtil.callMethods(mServiceListeners,
+                            new AidlUtil.CallFunction<IHumiTempServiceListener>() {
+                                public boolean run(IHumiTempServiceListener item)
+                                        throws RemoteException {
+                                    item.onWebEvent(Constants.WEB_EVENT_REGISTERING_FAILED);
+                                    return true;
+                                };
+                            });
+                }
+            }
+        }, username);
+        mRunningTask.execute();
+        return true;
+    }
+
+    public boolean requestUpload() {
+        UserInfo userInfo = mPreference.getUserInfo();
+        if (userInfo == null) {
+            return false;
+        }
+        if (mUploadTask != null) {
+            return false;
+        }
+        List<HumiTempModel> models = mDbHelper.findHumiTempModelBySendFlag(false, 300);
+        if (models.size() == 0) {
+            return false;
+        }
+
+        mUploadTask = new UploadTask(new IUploadTaskListener() {
+
+            @Override
+            public void onUploadTaskStart() {
+                AidlUtil.callMethods(mServiceListeners,
+                        new AidlUtil.CallFunction<IHumiTempServiceListener>() {
+                            public boolean run(IHumiTempServiceListener item)
+                                    throws RemoteException {
+                                item.onWebEvent(Constants.WEB_EVENT_UPLOADING_BEGIN);
+                                return true;
+                            };
+                        });
+            }
+
+            @Override
+            public void onUploadTaskFinish(HttpResultInfo info) {
+                mUploadTask = null;
+                if (info != null && info.isResult()) {
+                    if (info.getExtra() instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<Long> ids = (List<Long>)info.getExtra();
+                        mDbHelper.updateHumiTempModelSendFlag(true, ids);
+                    }
+
+                    AidlUtil.callMethods(mServiceListeners,
+                            new AidlUtil.CallFunction<IHumiTempServiceListener>() {
+                                public boolean run(IHumiTempServiceListener item)
+                                        throws RemoteException {
+                                    item.onWebEvent(Constants.WEB_EVENT_UPLOADING_FINISHED);
+                                    return true;
+                                };
+                            });
+                } else {
+                    AidlUtil.callMethods(mServiceListeners,
+                            new AidlUtil.CallFunction<IHumiTempServiceListener>() {
+                                public boolean run(IHumiTempServiceListener item)
+                                        throws RemoteException {
+                                    item.onWebEvent(Constants.WEB_EVENT_UPLOADING_FAILED);
+                                    return true;
+                                };
+                            });
+                }
+            }
+        }, userInfo);
+
+        HumiTempModel[] args = models.toArray(new HumiTempModel[models.size()]);
+        mUploadTask.execute(args);
+
+        return true;
+    }
+
+    @Override
+    public UserInfo getUserInfo() throws RemoteException {
+        return mPreference.getUserInfo();
     }
 }

@@ -21,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements View.OnClickListener, OnItemClickListener {
     private static final int REQUEST_CODE_SELECT_DEVICE = 1;
@@ -83,6 +84,10 @@ public class MainActivity extends Activity implements View.OnClickListener, OnIt
         public void onDeviceModelUpdated(DeviceModel model) throws RemoteException {
             me.onDeviceModelUpdated(model);
         }
+
+        public void onWebEvent(int webEvent) throws RemoteException {
+            Toast.makeText(me, "onWebEvent:" + webEvent, Toast.LENGTH_SHORT).show();
+        };
     };
 
     @Override
@@ -95,6 +100,7 @@ public class MainActivity extends Activity implements View.OnClickListener, OnIt
         // Setting event listeners
         findViewById(R.id.updateButton).setOnClickListener(this);
         findViewById(R.id.selectDeviceButton).setOnClickListener(this);
+        findViewById(R.id.syncButton).setOnClickListener(this);
 
         ArrayAdapter<DeviceModelBundle> adapter = new ArrayAdapter<DeviceModelBundle>(this,
                 android.R.layout.simple_list_item_1, new ArrayList<DeviceModelBundle>());
@@ -191,6 +197,9 @@ public class MainActivity extends Activity implements View.OnClickListener, OnIt
         } else if (v.getId() == R.id.selectDeviceButton) {
             Intent intent = new Intent(this, SelectDeviceActivity.class);
             startActivityForResult(intent, REQUEST_CODE_SELECT_DEVICE);
+        } else if (v.getId() == R.id.syncButton) {
+            Intent intent = new Intent(this, SyncActivity.class);
+            startActivity(intent);
         }
     }
 

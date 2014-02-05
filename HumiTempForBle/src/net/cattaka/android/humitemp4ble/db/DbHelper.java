@@ -2,6 +2,7 @@
 package net.cattaka.android.humitemp4ble.db;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import net.cattaka.android.humitemp4ble.entity.DeviceModel;
 import net.cattaka.android.humitemp4ble.entity.HumiTempModel;
 import net.cattaka.android.humitemp4ble.entity.handler.DeviceModelHandler;
 import net.cattaka.android.humitemp4ble.entity.handler.HumiTempModelHandler;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -51,6 +53,36 @@ public class DbHelper extends SQLiteOpenHelper {
         try {
 
             return DeviceModelHandler.findOrderByAddressAsc(db, -1);
+        } finally {
+            db.close();
+        }
+    }
+
+    public List<HumiTempModel> findHumiTempModelBySendFlag(boolean sendFlag, int limit) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            return HumiTempModelHandler.findBySendFlagOrderByIdAsc(db, limit, sendFlag);
+        } finally {
+            db.close();
+        }
+    }
+
+    public boolean updateHumiTempModelSendFlag(boolean sendFlag, Collection<Long> ids) {
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            ContentValues values = new ContentValues();
+            values.put(HumiTempModelHandler.COL_NAME_SEND_FLAG, 1);
+            StringBuilder whereClause = new StringBuilder();
+            for (Long id : ids) {
+                if (whereClause.length() == 0) {
+                    whereClause.append(HumiTempModelHandler.COL_NAME_ID + " IN (");
+                } else {
+                    whereClause.append(',');
+                }
+                whereClause.append(id);
+            }
+            whereClause.append(')');
+            return db.update(HumiTempModelHandler.TABLE_NAME, values, whereClause.toString(), null) > 0;
         } finally {
             db.close();
         }

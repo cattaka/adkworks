@@ -3,8 +3,8 @@ package net.cattaka.android.humitemp4ble.fragment;
 
 import net.cattaka.android.humitemp4ble.IAppListener;
 import net.cattaka.android.humitemp4ble.IAppStub;
+import net.cattaka.android.humitemp4ble.core.MyPreference;
 import net.cattaka.android.humitemp4ble.db.DbHelper;
-import net.cattaka.android.humitemp4ble.util.MyPreference;
 import net.cattaka.libgeppa.IPassiveGeppaService;
 import android.support.v4.app.Fragment;
 

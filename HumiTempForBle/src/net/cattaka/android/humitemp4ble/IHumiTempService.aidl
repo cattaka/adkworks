@@ -4,6 +4,7 @@ package net.cattaka.android.humitemp4ble;
 import net.cattaka.android.humitemp4ble.IHumiTempServiceListener;
 import net.cattaka.android.humitemp4ble.entity.HumiTempModel;
 import net.cattaka.android.humitemp4ble.entity.DeviceModel;
+import net.cattaka.android.humitemp4ble.data.UserInfo;
 import android.bluetooth.BluetoothDevice;
 
 
@@ -19,4 +20,9 @@ interface IHumiTempService {
     
     int registerServiceListener(IHumiTempServiceListener listener);
     boolean unregisterServiceListener(int seq);
+    
+    boolean regiterUser(String username);
+    boolean requestUpload();
+
+    UserInfo getUserInfo();
 }

@@ -8,4 +8,6 @@ import android.bluetooth.BluetoothDevice;
 
 interface IHumiTempServiceListener {
     void onDeviceModelUpdated(in DeviceModel model);
+    
+    void onWebEvent(int webEvent);
 }

@@ -9,7 +9,9 @@ import net.cattaka.util.gendbhandler.GenDbHandler;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-@GenDbHandler(genDbFunc = true, genParcelFunc = true)
+@GenDbHandler(genDbFunc = true, genParcelFunc = true, find = {
+    "sendFlag:id+"
+})
 public class HumiTempModel implements Parcelable {
     public static final Parcelable.Creator<HumiTempModel> CREATOR = HumiTempModelHandler.CREATOR;
 

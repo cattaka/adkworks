@@ -2,4 +2,5 @@
     <factorypathentry kind="PLUGIN" id="org.eclipse.jst.ws.annotations.core" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="WKSPJAR" id="/HumiTempForBle/factory/GenAsyncInterface-apt_0.0.5.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="WKSPJAR" id="/HumiTempForBle/factory/GenDbHandler_1.1.0.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/HumiTempForBle/factory/jsonpullparser-apt-1.6.2-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

@@ -67,6 +67,8 @@
         </activity>
         <activity android:name="net.cattaka.android.humitemp4ble.SelectDeviceActivity" >
         </activity>
+        <activity android:name="net.cattaka.android.humitemp4ble.SyncActivity" >
+        </activity>
     </application>
 
 </manifest>
