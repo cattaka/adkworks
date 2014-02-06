@@ -9,11 +9,11 @@
 //#define DEBUG
 
 //===================================================
-#define DHTPIN A0     // what pin we're connected to
+#define DHTPIN 3     // what pin we're connected to
 
 // Uncomment whatever type you're using!
-#define DHTTYPE DHT11   // DHT 11 
-//#define DHTTYPE DHT22   // DHT 22  (AM2302)
+//#define DHTTYPE DHT11   // DHT 11 
+#define DHTTYPE DHT22   // DHT 22  (AM2302)
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
 
 #define RING_BUF_SIZE 10
@@ -49,7 +49,13 @@ void setup() {
   float h;
   float t;
   do {
-    Serial.println("test.");
+    Serial.print("Humidity: "); 
+    Serial.print(h);
+    Serial.print(" %\t, ");
+    Serial.print("Temperature: "); 
+    Serial.print(t);
+    Serial.print(" *C, ");
+    Serial.println();
     gLastTime = millis();
     h = dht.readHumidity();
     t = dht.readTemperature();
