@@ -192,6 +192,7 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
         mAddress2DeviceBundle = new HashMap<String, HumiTempService.DeviceBundle>();
 
         sHandler.obtainMessage(EVENT_UPDATE_SENSOR_VALUES, this).sendToTarget();
+        sHandler.obtainMessage(EVENT_UPLOAD, this).sendToTarget();
 
         {
             Intent serviceIntent = new Intent(this, TelnetSqliteService.class);
@@ -205,6 +206,7 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
         stopAll();
 
         sHandler.removeMessages(EVENT_UPDATE_SENSOR_VALUES, this);
+        sHandler.removeMessages(EVENT_UPLOAD, this);
 
         if (mDbHelper != null) {
             mDbHelper.close();
