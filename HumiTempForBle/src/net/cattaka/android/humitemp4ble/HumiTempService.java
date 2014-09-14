@@ -38,12 +38,13 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
 
     private static final int EVENT_UPLOAD = 2;
 
-    private static final int INTERVAL_UPDATE_SENSOR_VALUES = 60000;
+    private static final long INTERVAL_UPDATE_SENSOR_VALUES = 60000 * 5;
 
-    private static final int INTERVAL_UPLOAD = 60000 * 60;
+    private static final long INTERVAL_UPLOAD = 60000 * 60;
+    
+    private static final int NUM_OF_UPLOAD_ONCE = 300;
 
     private static class DeviceBundle {
-        boolean needRecord = false;
 
         BluetoothDevice bluetoothDevice;
 
@@ -52,16 +53,17 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
         DeviceModel deviceModel;
 
         MyGattCallbackEx myGattCallback;
+        
+        long lastRecordTime = 0;
 
         private DeviceBundle(BluetoothDevice bluetoothDevice, BluetoothGatt gatt,
-                DeviceModel deviceModel, MyGattCallbackEx myGattCallback, boolean needRecord) {
+                DeviceModel deviceModel, MyGattCallbackEx myGattCallback) {
             super();
             this.bluetoothDevice = bluetoothDevice;
             this.gatt = gatt;
             this.deviceModel = deviceModel;
             this.myGattCallback = myGattCallback;
             this.myGattCallback.deviceBundle = this;
-            this.needRecord = needRecord;
         }
 
     }
@@ -98,7 +100,7 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
         public void handleMessage(android.os.Message msg) {
             HumiTempService target = (HumiTempService)msg.obj;
             if (msg.what == EVENT_UPDATE_SENSOR_VALUES) {
-                target.updateSensorValues(true, true);
+                target.updateSensorValues();
 
                 Message nextMessage = sHandler.obtainMessage(EVENT_UPDATE_SENSOR_VALUES, target);
                 sendMessageDelayed(nextMessage, INTERVAL_UPDATE_SENSOR_VALUES);
@@ -190,6 +192,7 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
         mAddress2DeviceBundle = new HashMap<String, HumiTempService.DeviceBundle>();
 
         sHandler.obtainMessage(EVENT_UPDATE_SENSOR_VALUES, this).sendToTarget();
+        sHandler.obtainMessage(EVENT_UPLOAD, this).sendToTarget();
 
         {
             Intent serviceIntent = new Intent(this, TelnetSqliteService.class);
@@ -203,6 +206,7 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
         stopAll();
 
         sHandler.removeMessages(EVENT_UPDATE_SENSOR_VALUES, this);
+        sHandler.removeMessages(EVENT_UPLOAD, this);
 
         if (mDbHelper != null) {
             mDbHelper.close();
@@ -264,14 +268,6 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
 
     @Override
     public List<DeviceModel> updateSensorValues() {
-        return updateSensorValues(false, false);
-    }
-
-    public List<DeviceModel> updateSensorValues(boolean resetAll, boolean needRecord) {
-        if (resetAll) {
-            stopAll();
-        }
-
         List<DeviceModel> result = new ArrayList<DeviceModel>();
         List<DeviceModel> deviceModels = mDbHelper.findDeviceModels();
         for (DeviceModel deviceModel : deviceModels) {
@@ -282,7 +278,7 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
             BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(deviceModel.getAddress());
             MyGattCallbackEx callback = new MyGattCallbackEx();
             BluetoothGatt gatt = device.connectGatt(this, false, callback);
-            bundle = new DeviceBundle(device, gatt, deviceModel, callback, needRecord);
+            bundle = new DeviceBundle(device, gatt, deviceModel, callback);
             mAddress2DeviceBundle.put(deviceModel.getAddress(), bundle);
         }
         return result;
@@ -306,7 +302,8 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
             mDbHelper.registerDeviceModel(deviceModel);
         }
 
-        if (bundle.needRecord) {
+        if (date.getTime() - bundle.lastRecordTime > INTERVAL_UPDATE_SENSOR_VALUES) {
+        	bundle.lastRecordTime = date.getTime();
             HumiTempModel model = new HumiTempModel();
             model.setDeviceId(bundle.deviceModel.getId());
             model.setDate(date);
@@ -389,7 +386,7 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
         if (mUploadTask != null) {
             return false;
         }
-        List<HumiTempModel> models = mDbHelper.findHumiTempModelBySendFlag(false, 300);
+        final List<HumiTempModel> models = mDbHelper.findHumiTempModelBySendFlag(false, NUM_OF_UPLOAD_ONCE);
         if (models.size() == 0) {
             return false;
         }
@@ -426,6 +423,9 @@ public class HumiTempService extends Service implements IHumiTempServiceWrapper 
                                     return true;
                                 };
                             });
+                    if (models.size() == NUM_OF_UPLOAD_ONCE) {
+                    	me.requestUpload();
+                    }
                 } else {
                     AidlUtil.callMethods(mServiceListeners,
                             new AidlUtil.CallFunction<IHumiTempServiceListener>() {
