@@ -3,12 +3,12 @@ package net.cattaka.android.humitemp.entity;
 
 import java.util.Date;
 
-import net.cattaka.util.gendbhandler.Attribute;
-import net.cattaka.util.gendbhandler.GenDbHandler;
+import net.cattaka.util.cathandsgendroid.annotation.DataModel;
+import net.cattaka.util.cathandsgendroid.annotation.DataModelAttrs;
 
-@GenDbHandler
+@DataModel
 public class HumiTempModel {
-    @Attribute(primaryKey = true)
+    @DataModelAttrs(primaryKey = true)
     private Long id;
 
     private Date date;

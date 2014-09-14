@@ -7,7 +7,7 @@ import java.util.List;
 
 import net.cattaka.android.humitemp4pd.Constants;
 import net.cattaka.android.humitemp4pd.entity.HumiTempModel;
-import net.cattaka.android.humitemp4pd.entity.handler.HumiTempModelHandler;
+import net.cattaka.android.humitemp4pd.entity.HumiTempModelCatHands;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -21,7 +21,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(HumiTempModelHandler.SQL_CREATE_TABLE);
+        db.execSQL(HumiTempModelCatHands.SQL_CREATE_TABLE);
         db.execSQL("CREATE INDEX IDX_humiTempModel ON humiTempModel(date)");
     }
 
@@ -41,18 +41,18 @@ public class DbHelper extends SQLiteOpenHelper {
             String selection;
             String[] selectionArgs;
             if (from != null && to != null) {
-                selection = "?<=" + HumiTempModelHandler.COL_NAME_DATE + " AND "
-                        + HumiTempModelHandler.COL_NAME_DATE + "<=?";
+                selection = "?<=" + HumiTempModelCatHands.COL_NAME_DATE + " AND "
+                        + HumiTempModelCatHands.COL_NAME_DATE + "<=?";
                 selectionArgs = new String[] {
                         String.valueOf(from.getTime()), String.valueOf(to.getTime())
                 };
             } else if (from != null) {
-                selection = "?<=" + HumiTempModelHandler.COL_NAME_DATE;
+                selection = "?<=" + HumiTempModelCatHands.COL_NAME_DATE;
                 selectionArgs = new String[] {
                     String.valueOf(from.getTime())
                 };
             } else if (to != null) {
-                selection = HumiTempModelHandler.COL_NAME_DATE + "<=?";
+                selection = HumiTempModelCatHands.COL_NAME_DATE + "<=?";
                 selectionArgs = new String[] {
                     String.valueOf(String.valueOf(to.getTime()))
                 };
@@ -61,18 +61,18 @@ public class DbHelper extends SQLiteOpenHelper {
                 selectionArgs = null;
             }
             cursor = db.query( //
-                    HumiTempModelHandler.TABLE_NAME, // table,
-                    HumiTempModelHandler.COLUMNS_ARRAY, // columns,
+                    HumiTempModelCatHands.TABLE_NAME, // table,
+                    HumiTempModelCatHands.COLUMNS_ARRAY, // columns,
                     selection,// selection,
                     selectionArgs,// selectionArgs,
                     null, // groupBy,
                     null, // having,
-                    HumiTempModelHandler.COL_NAME_DATE // orderBy)
+                    HumiTempModelCatHands.COL_NAME_DATE // orderBy)
                     );
 
             List<HumiTempModel> models = new ArrayList<HumiTempModel>();
             while (cursor.moveToNext()) {
-                models.add(HumiTempModelHandler.readCursorByIndex(cursor));
+                models.add(HumiTempModelCatHands.readCursorByIndex(cursor));
             }
             return models;
         } finally {
@@ -89,9 +89,9 @@ public class DbHelper extends SQLiteOpenHelper {
             db = getWritableDatabase();
             db.beginTransaction();
             if (model.getId() == null) {
-                result = (HumiTempModelHandler.insert(db, model) > 0);
+                result = (HumiTempModelCatHands.insert(db, model) > 0);
             } else {
-                result = (HumiTempModelHandler.update(db, model) > 0);
+                result = (HumiTempModelCatHands.update(db, model) > 0);
             }
             db.setTransactionSuccessful();
         } finally {

@@ -4,7 +4,7 @@ package net.cattaka.android.humitemp4pd.db;
 import java.util.List;
 
 import net.cattaka.android.humitemp4pd.entity.MySocketAddress;
-import net.cattaka.android.humitemp4pd.entity.handler.MySocketAddressHandler;
+import net.cattaka.android.humitemp4pd.entity.MySocketAddressCatHands;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -18,7 +18,7 @@ public class BtDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(MySocketAddressHandler.SQL_CREATE_TABLE);
+        db.execSQL(MySocketAddressCatHands.SQL_CREATE_TABLE);
     }
 
     @Override
@@ -29,7 +29,7 @@ public class BtDbHelper extends SQLiteOpenHelper {
     public List<MySocketAddress> findMySocketAddresses() {
         SQLiteDatabase db = getReadableDatabase();
         try {
-            return MySocketAddressHandler.findOrderByIdAsc(db, 0);
+            return MySocketAddressCatHands.findOrderByIdAsc(db, 0);
         } finally {
             db.close();
         }
@@ -41,9 +41,9 @@ public class BtDbHelper extends SQLiteOpenHelper {
         try {
             db.beginTransaction();
             if (item.getId() == null) {
-                result = MySocketAddressHandler.insert(db, item);
+                result = MySocketAddressCatHands.insert(db, item);
             } else {
-                result = MySocketAddressHandler.update(db, item);
+                result = MySocketAddressCatHands.update(db, item);
             }
             db.setTransactionSuccessful();
         } finally {
@@ -58,7 +58,7 @@ public class BtDbHelper extends SQLiteOpenHelper {
         long result = 0;
         try {
             db.beginTransaction();
-            result = MySocketAddressHandler.delete(db, id);
+            result = MySocketAddressCatHands.delete(db, id);
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();

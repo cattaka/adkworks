@@ -2,12 +2,12 @@
 package net.cattaka.android.humitemp4pd.entity;
 
 import net.cattaka.libgeppa.data.DeviceInfo;
-import net.cattaka.util.gendbhandler.Attribute;
-import net.cattaka.util.gendbhandler.GenDbHandler;
+import net.cattaka.util.cathandsgendroid.annotation.DataModel;
+import net.cattaka.util.cathandsgendroid.annotation.DataModelAttrs;
 
-@GenDbHandler(find = ":id")
+@DataModel(find = ":id")
 public class MySocketAddress {
-    @Attribute(primaryKey = true)
+    @DataModelAttrs(primaryKey = true)
     private Long id;
 
     private String hostName;
